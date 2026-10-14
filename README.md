@@ -20,37 +20,66 @@ It asks one question: **once a few buttons are confirmed, how much of the rest
 of the remote can be predicted?** Every button predicted correctly is a question
 the user is not asked.
 
-Status, 13 October 2026: the data, the evaluation method and two reference
-predictors are in place. The model itself is the work of the coming weeks.
+Status, 14 October 2026: the data, the evaluation method, two reference
+predictors and a first model are in place.
 
-## First results
+## Results so far
 
-A whole brand is held out at a time, so the test is a TV whose brand is in no
-list. The first buttons the app would learn are revealed and the rest are
-guessed.
+The test is a TV whose brand is in no list: every remote of the target's brand
+is removed from the catalogue, the first buttons the app would learn are
+revealed, and the rest are guessed. The model's three settings were chosen on
+one half of the brands. The numbers below are from the other half, which
+nothing was tuned on.
 
-| Confirmed buttons | Remotes with a neighbour | most_common | exact_match |
+Every remote (635 of them):
+
+| Confirmed buttons | most_common | exact_match | mixture |
 |---|---|---|---|
-| 1 | 916 of 1258 (73%) | 54.5% | 60.9% |
-| 2 | 916 of 1258 (73%) | 54.3% | 60.1% |
-| 3 | 904 of 1235 (73%) | 54.3% | 59.0% |
+| 1 | 37.8% | 42.7% | 44.6% |
+| 2 | 38.0% | 42.4% | 46.5% |
+| 3 | 38.2% | 41.5% | 47.1% |
+| 5 | 38.5% | 42.2% | 51.3% |
+
+Remotes whose address another brand also uses (416):
+
+| Confirmed buttons | most_common | exact_match | mixture |
+|---|---|---|---|
+| 1 | 53.8% | 60.8% | 60.3% |
+| 2 | 53.8% | 60.1% | 62.3% |
+| 3 | 53.8% | 58.5% | 61.9% |
+| 5 | 53.7% | 58.9% | 65.6% |
+
+Remotes alone on their address (219):
+
+| Confirmed buttons | most_common | exact_match | mixture |
+|---|---|---|---|
+| 1 | 0.0% | 0.0% | 7.6% |
+| 2 | 0.0% | 0.0% | 8.5% |
+| 3 | 0.0% | 0.0% | 11.2% |
+| 5 | 0.0% | 0.0% | 15.1% |
 
 Each cell is the share of the remaining buttons guessed with the right command.
 
 - `most_common` is what the app does today: the most frequent command for each
   button on that address, whatever is already known.
-- `exact_match` votes only among catalogue remotes that agree with every
+- `exact_match` votes only among remotes on that address that agree with every
   confirmed button.
+- `mixture` is the model. Every catalogue remote that resembles the one being
+  rebuilt votes with a weight: full weight on the same address, a small one on
+  another address if it shares a confirmed button, and less for each confirmed
+  button it gets wrong.
 
-What this says:
+What this says, plainly:
 
-- One confirmed button already carries information: about six points.
-- Exact matching does not get better with a second and a third button. It
-  throws away remotes that differ in one place. A model that weighs partial
-  agreement is the next step.
-- 27% of remotes have no neighbour: no other brand uses their address. Nothing
-  here can help them yet. Learning button layouts across addresses is the
-  step after that, and the one that matters most for unknown TVs.
+- The model is the only one that gets better as buttons are confirmed: from
+  44.6% after one button to 51.3% after five, where the app's current method
+  stays near 38%.
+- After a single button it is barely ahead of exact matching, and slightly
+  behind it on shared addresses. One button is not enough to rebuild a remote.
+- A third of the remotes sit alone on their address. Today's method can say
+  nothing about them. Looking at layouts on other addresses recovers a little,
+  7.6% to 15.1%, and that is the weakest part of the model and the one that
+  matters most for an unknown TV.
 
 ## Run it
 
@@ -58,7 +87,8 @@ Python 3.11 or later. No dependencies.
 
 ```
 python -m unittest        # tests
-python -m dna.evaluate    # the table above
+python -m dna.evaluate    # the tables above (the held-out half)
+python -m dna.evaluate --fold all
 ```
 
 ## Layout
@@ -67,8 +97,8 @@ python -m dna.evaluate    # the table above
 |---|---|
 | `data/catalogue.json` | Known remotes: protocol, address, button to command |
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
-| `dna/predict.py` | The predictors being compared |
-| `dna/evaluate.py` | Leave-one-brand-out evaluation |
+| `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
+| `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
 
 ## What existed before, and what is built here
