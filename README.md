@@ -90,9 +90,9 @@ until volume up, volume down, mute, OK and back are all found.
 
 | Remotes | Sessions | Today: mean | Today: median | Model: mean | Model: median |
 |---|---|---|---|---|---|
-| Every remote | 597 | 58.3 | 36 | 50.9 | 29 |
+| Every remote | 597 | 58.3 | 36 | 50.7 | 29 |
 | Address shared with another brand | 390 | 48.9 | 26 | 37.2 | 8 |
-| Alone on its address | 207 | 76.0 | 49 | 76.6 | 51 |
+| Alone on its address | 207 | 76.0 | 49 | 76.0 | 49 |
 
 Sessions still unfinished after 300 questions: today 21, model 15.
 
@@ -101,9 +101,29 @@ Sessions still unfinished after 300 questions: today 21, model 15.
   "nothing happened" as well: a remote that uses that command for any button
   cannot be this TV's.
 - Where another brand shares the address, the typical session drops from 26
-  questions to 8.
-- Where the TV is alone on its address, the model does not help yet. That is
-  the open problem.
+  questions to 8, and the total number of questions by about a quarter.
+- That is an average, not a promise for every TV. Session by session, the
+  model asked fewer questions in 114 cases, the same number in 168 and more in
+  108. It wins big when it recognises the remote and loses a few questions
+  when it chases the wrong one.
+- Where the TV is alone on its address, the app keeps today's order. On the
+  tuning half, letting the model steer there lost more sessions than it won
+  (53 against 21) and saved nothing overall. This is the open problem.
+
+## Live demo
+
+`demo/index.html` replays a session in the browser: pick any remote, and the
+page plays the TV while today's order and the model race side by side, with
+the reason for each of the model's choices. `demo/dna.js` is the same model
+in JavaScript; `tests/test_parity.py` checks it asks exactly the same
+questions as the Python on every remote.
+
+To run it locally, serve the repository root and open the demo:
+
+```
+python -m http.server 8000
+# then open http://localhost:8000/demo/
+```
 
 ## Run it
 
@@ -124,6 +144,7 @@ python -m dna.simulate    # questions per session (the held-out half)
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
 | `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
 | `dna/simulate.py` | Replays a teach session and counts the questions |
+| `demo/` | The browser demo and the same model in JavaScript |
 | `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
 

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remote DNA: live demo</title>
+<meta name="description" content="Watch Remote DNA learn the buttons of a TV it has never seen, next to the app's current method.">
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --line: #e2e6ef; --text: #141a26; --dim: #5d6880;
+    --accent: #2f6fe4; --good: #1a8f55; --old: #8a94a8; --chip: #eef1f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b101d; --card: #131a2b; --line: #243049; --text: #e8edf7; --dim: #93a1bc;
+            --accent: #5b8ff5; --good: #3ccf86; --old: #6e7a93; --chip: #1b2438; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .lead { color: var(--dim); margin: 0 0 20px; max-width: 720px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .pick { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; color: var(--dim); margin-bottom: 4px; }
+  select, button { font: inherit; border-radius: 10px; border: 1px solid var(--line);
+                   background: var(--card); color: var(--text); padding: 9px 12px; }
+  select { min-width: 180px; max-width: 100%; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  .target { font-size: 14px; color: var(--dim); margin: 4px 0 14px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+           background: var(--chip); color: var(--text); margin-left: 6px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .race { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .race { grid-template-columns: 1fr; } }
+  .lane h2 { font-size: 16px; margin: 0 0 2px; }
+  .lane .sub { font-size: 13px; color: var(--dim); margin: 0 0 12px; min-height: 40px; }
+  .count { font-size: 44px; font-weight: 800; line-height: 1; }
+  .count small { font-size: 14px; font-weight: 500; color: var(--dim); margin-left: 6px; }
+  .lane.old .count { color: var(--old); }
+  .lane.new .count { color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--chip); color: var(--dim); }
+  .chip.on { background: var(--good); color: #fff; }
+  .log { list-style: none; margin: 0; padding: 0; font-size: 13px; max-height: 260px; overflow: auto;
+         border-top: 1px solid var(--line); }
+  .log li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .log .hit { color: var(--good); font-weight: 600; }
+  .log .why { display: block; color: var(--dim); font-size: 12px; }
+  .done { font-weight: 700; color: var(--good); min-height: 24px; }
+  .facts { margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .facts { grid-template-columns: 1fr; } }
+  .fact b { display: block; font-size: 24px; }
+  .fact span { font-size: 13px; color: var(--dim); }
+  footer { margin-top: 22px; font-size: 13px; color: var(--dim); }
+  a { color: var(--accent); }
+  .err { color: #d14343; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Remote DNA: teaching a TV the app has never seen</h1>
+  <p class="lead">
+    In the app, the phone sends one infrared code at a time and the user says what the TV did.
+    Your browser cannot send infrared, so here the page plays the TV, using a real remote from the
+    catalogue. That remote's brand is removed from everything the model can see, exactly as for a TV
+    no list knows. Both sides stop when volume up, volume down, mute, OK and back are found.
+  </p>
+
+  <div class="card">
+    <div class="pick">
+      <div>
+        <label for="brand">Brand</label>
+        <select id="brand"></select>
+      </div>
+      <div>
+        <label for="remote">Remote</label>
+        <select id="remote"></select>
+      </div>
+      <button id="random">Random unseen TV</button>
+    </div>
+    <div class="target" id="target">Loading the catalogue…</div>
+
+    <div class="actions">
+      <button class="primary" id="step" disabled>Ask the next question</button>
+      <button id="run" disabled>Run to the end</button>
+      <button id="reset" disabled>Start again</button>
+    </div>
+
+    <div class="race">
+      <section class="lane old">
+        <h2>The app today</h2>
+        <p class="sub">Tries the codes known on this address in a fixed order, then every other code.</p>
+        <div class="count" id="old-count">0<small>questions</small></div>
+        <div class="chips" id="old-chips"></div>
+        <div class="done" id="old-done"></div>
+        <ul class="log" id="old-log"></ul>
+      </section>
+      <section class="lane new">
+        <h2>With Remote DNA</h2>
+        <p class="sub">After every answer, picks the code most likely to be a missing button, judging by the remotes that resemble this one.</p>
+        <div class="count" id="new-count">0<small>questions</small></div>
+        <div class="chips" id="new-chips"></div>
+        <div class="done" id="new-done"></div>
+        <ul class="log" id="new-log"></ul>
+      </section>
+    </div>
+  </div>
+
+  <div class="facts">
+    <div class="card fact"><b>26 → 8</b><span>typical questions where another brand shares the TV's address (390 held-out remotes)</span></div>
+    <div class="card fact"><b>About ¼ fewer</b><span>questions in total on those TVs. Session by session: fewer in 114, the same in 168, more in 108</span></div>
+    <div class="card fact"><b>No gain yet</b><span>when the TV is alone on its address (207 remotes): the app keeps its usual order there</span></div>
+  </div>
+
+  <footer>
+    Numbers are medians from <code>python -m dna.simulate</code> on the half of the brands nothing was tuned on.
+    This page runs the same model, checked to ask exactly the same questions as the Python on every remote.
+    REMOTE DNA by Solar AI Systems. Catalogue built from Flipper-IRDB and irdb.
+    Contains/accesses irdb by Simon Peter and contributors, used under permission. For licensing details and for
+    information on how to contribute to the database, see <a href="https://github.com/probonopd/irdb">github.com/probonopd/irdb</a>.
+  </footer>
+</div>
+
+<script type="module">
+import { ESSENTIALS, foldOf, loadCatalogue, poolFor, startSession } from './dna.js';
+
+const LABEL = { volUp: 'Volume up', volDown: 'Volume down', mute: 'Mute', ok: 'OK', back: 'Back', power: 'Power',
+  chUp: 'Channel up', chDown: 'Channel down', menu: 'Menu', home: 'Home', up: 'Up', down: 'Down', left: 'Left',
+  right: 'Right', source: 'Source', info: 'Info', exit: 'Exit' };
+const label = (b) => LABEL[b] ?? b.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+const hex = (c) => '0x' + c.toString(16).toUpperCase().padStart(2, '0');
+const $ = (id) => document.getElementById(id);
+
+let remotes = [];
+let byBrand = new Map();
+let target = null;
+let lanes = {};
+
+function buildLane(key, useModel) {
+  const pool = poolFor(target, remotes);
+  const session = startSession(target, pool, useModel);
+  $(key + '-log').innerHTML = '';
+  $(key + '-done').textContent = '';
+  lanes[key] = session;
+  render(key);
+}
+
+function render(key) {
+  const s = lanes[key];
+  $(key + '-count').firstChild.textContent = s.questions;
+  $(key + '-chips').innerHTML = s.targets
+    .map((b) => `<span class="chip${s.found.has(b) ? ' on' : ''}">${label(b)}</span>`).join('');
+  if (s.done) $(key + '-done').textContent = s.gaveUp ? 'Gave up after 300 questions' : `All found in ${s.questions} questions`;
+}
+
+function logStep(key) {
+  const s = lanes[key];
+  if (!s.last) return;
+  const { command, button, why } = s.last;
+  const hit = button && s.targets.includes(button);
+  const said = button ? `the TV did ${label(button)}` : 'nothing happened';
+  let reason = '';
+  if (why && why.length) {
+    const names = why.map((v) => `${[...v.remote.brands].slice(0, 2).join('/')} (${label(v.button)})`).join(', ');
+    reason = `<span class="why">Chosen because it matches: ${names}</span>`;
+  }
+  const li = document.createElement('li');
+  li.innerHTML = `Q${s.questions}: sent ${hex(command)}, ${hit ? `<span class="hit">${said}</span>` : said}${reason}`;
+  $(key + '-log').prepend(li);
+}
+
+function step() {
+  for (const key of ['old', 'new']) {
+    const s = lanes[key];
+    if (s.done) continue;
+    s.next();
+    logStep(key);
+    render(key);
+  }
+  const over = lanes.old.done && lanes.new.done;
+  $('step').disabled = $('run').disabled = over;
+}
+
+function runToEnd() {
+  let guard = 0;
+  while (!(lanes.old.done && lanes.new.done) && guard++ < 400) step();
+}
+
+function chooseTarget(t) {
+  target = t;
+  const unseen = foldOf(t) === 1;
+  const shared = poolFor(t, remotes).some((r) => r.address === t.address);
+  $('target').innerHTML =
+    `Hidden TV: <b>${[...t.brands].join(' / ')}</b>, ${t.protocol} at address ${hex(t.address)}, ` +
+    `${Object.keys(t.commands).length} buttons.` +
+    (unseen ? '<span class="badge">held-out brand</span>' : '') +
+    `<span class="badge">${shared ? 'address shared with other brands' : 'alone on its address'}</span>`;
+  buildLane('old', false);
+  buildLane('new', true);
+  $('step').disabled = $('run').disabled = false;
+  $('reset').disabled = false;
+}
+
+function fillRemotes(brand) {
+  const list = byBrand.get(brand) ?? [];
+  $('remote').innerHTML = list
+    .map((r, i) => `<option value="${i}">${r.protocol} · ${hex(r.address)} · ${Object.keys(r.commands).length} buttons</option>`)
+    .join('');
+  if (list.length) chooseTarget(list[0]);
+}
+
+function randomUnseen() {
+  const pick = remotes.filter((r) => foldOf(r) === 1 && ESSENTIALS.every((b) => b in r.commands)
+    && poolFor(r, remotes).some((p) => p.address === r.address));
+  const t = pick[Math.floor(Math.random() * pick.length)];
+  const brand = [...t.brands].sort()[0];
+  $('brand').value = brand;
+  fillRemotes(brand);
+  $('remote').value = String(byBrand.get(brand).indexOf(t));
+  chooseTarget(t);
+}
+
+try {
+  const raw = await (await fetch('../data/catalogue.json')).json();
+  remotes = loadCatalogue(raw).filter((r) => ESSENTIALS.some((b) => b in r.commands));
+  for (const r of remotes) {
+    for (const b of r.brands) {
+      if (!byBrand.has(b)) byBrand.set(b, []);
+      byBrand.get(b).push(r);
+    }
+  }
+  const brands = [...byBrand.keys()].sort((a, b) => a.localeCompare(b));
+  $('brand').innerHTML = brands.map((b) => `<option>${b}</option>`).join('');
+  $('brand').onchange = (e) => fillRemotes(e.target.value);
+  $('remote').onchange = (e) => chooseTarget(byBrand.get($('brand').value)[Number(e.target.value)]);
+  $('random').onclick = randomUnseen;
+  $('step').onclick = step;
+  $('run').onclick = runToEnd;
+  $('reset').onclick = () => chooseTarget(target);
+  randomUnseen();
+} catch (e) {
+  $('target').innerHTML = `<span class="err">The catalogue could not be loaded. Open this page through a web server, not as a file.</span>`;
+}
+</script>
+</body>
+</html>

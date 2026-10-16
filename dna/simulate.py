@@ -10,7 +10,8 @@ Two ways of choosing the next command are compared:
 - `catalogue_order` is what the app does today. Commands seen on this address
   are tried in a fixed order, the ones usually meaning a needed button first,
   then everything else, then a blind sweep of every number the protocol allows.
-- `model_order` asks the model after every answer: which untried command is
+- `model_order` asks the model after every answer (when the catalogue has
+  remotes on the TV's address; otherwise it keeps today's order): which untried command is
   most likely to be one of the buttons still missing? It learns from "nothing
   happened" too, because a catalogue remote that uses that command for any
   button cannot be this TV's remote.
@@ -108,6 +109,17 @@ class Session:
         return out
 
 
+def has_neighbours(where: Where, pool: list[Remote]) -> bool:
+    """Whether any catalogue remote shares the TV's address.
+
+    Without one, the model has only layouts from other addresses to go on, and
+    on the tuning half of the brands that lost more sessions than it won (53
+    against 21, no questions saved overall). So for those TVs the app keeps
+    today's order. The app knows this before the first question.
+    """
+    return any(r.where == where for r in pool)
+
+
 def run_session(target: Remote, pool: list[Remote], use_model: bool) -> int:
     """Questions asked until the target's essentials are all found."""
     targets = [b for b in ESSENTIALS if b in target.commands]
@@ -115,7 +127,7 @@ def run_session(target: Remote, pool: list[Remote], use_model: bool) -> int:
     found: set[str] = set()
     tried: set[int] = set()
     fixed = catalogue_order(target.where, pool, targets)
-    session = Session(target.where, pool) if use_model else None
+    session = Session(target.where, pool) if use_model and has_neighbours(target.where, pool) else None
     questions = 0
     while len(found) < len(targets) and questions < GIVE_UP:
         if session is None:
@@ -175,8 +187,25 @@ def run(remotes: list[Remote], fold: int | None = REPORTED_FOLD) -> dict[str, di
     return {name: {g: summarise(v) for g, v in groups.items() if v} for name, groups in counts.items()}
 
 
+def head_to_head(remotes: list[Remote], fold: int | None = REPORTED_FOLD) -> dict[str, list[int]]:
+    """Per group: sessions where the model asked fewer, the same, or more questions."""
+    by_protocol: dict[str, list[Remote]] = defaultdict(list)
+    for r in remotes:
+        by_protocol[r.protocol].append(r)
+    out = {g: [0, 0, 0] for g in ("near", "alone")}
+    for target in remotes:
+        if (fold is not None and fold_of(target) != fold) or not any(b in target.commands for b in ESSENTIALS):
+            continue
+        pool = [r for r in by_protocol[target.protocol] if not (r.brands & target.brands)]
+        today, model = run_session(target, pool, False), run_session(target, pool, True)
+        group = "near" if has_neighbours(target.where, pool) else "alone"
+        out[group][0 if model < today else 1 if model == today else 2] += 1
+    return out
+
+
 def report(remotes: list[Remote], fold: int | None = REPORTED_FOLD) -> str:
     result = run(remotes, fold)
+    duel = head_to_head(remotes, fold)
     which = "all brands" if fold is None else f"fold {fold} of the brands"
     lines = [
         f"Questions asked until the essential buttons ({', '.join(ESSENTIALS)}) are found. {which}.",
@@ -191,6 +220,12 @@ def report(remotes: list[Remote], fold: int | None = REPORTED_FOLD) -> str:
             lines.append(f"| {title} | {a.sessions} | {a.mean:.1f} | {a.median:.0f} | {b.mean:.1f} | {b.median:.0f} |")
     gave = result["catalogue_order"]["all"].gave_up, result["model_order"]["all"].gave_up
     lines += ["", f"Sessions still unfinished after {GIVE_UP} questions: today {gave[0]}, model {gave[1]}."]
+    near = duel["near"]
+    lines += [
+        "",
+        f"Where the address is shared, session by session: the model asked fewer questions in {near[0]}, "
+        f"the same number in {near[1]}, and more in {near[2]}.",
+    ]
     return "\n".join(lines)
 
 
