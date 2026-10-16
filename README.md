@@ -21,7 +21,7 @@ of the remote can be predicted?** Every button predicted correctly is a question
 the user is not asked.
 
 Status, 14 October 2026: the data, the evaluation method, two reference
-predictors and a first model are in place.
+predictors and a first model are in place, with a simulation of the session the app runs.
 
 ## Results so far
 
@@ -81,6 +81,30 @@ What this says, plainly:
   7.6% to 15.1%, and that is the weakest part of the model and the one that
   matters most for an unknown TV.
 
+## Questions asked until the remote works
+
+The share of buttons guessed right is a means. What a user feels is how many
+times the app asks "what did the TV do?". `dna/simulate.py` replays a "Teach my
+TV" session on every remote of the held-out half: one command per question,
+until volume up, volume down, mute, OK and back are all found.
+
+| Remotes | Sessions | Today: mean | Today: median | Model: mean | Model: median |
+|---|---|---|---|---|---|
+| Every remote | 597 | 58.3 | 36 | 50.9 | 29 |
+| Address shared with another brand | 390 | 48.9 | 26 | 37.2 | 8 |
+| Alone on its address | 207 | 76.0 | 49 | 76.6 | 51 |
+
+Sessions still unfinished after 300 questions: today 21, model 15.
+
+- "Today" is the app's current order, fixed before the first question.
+- "Model" re-ranks the untried commands after every answer, and learns from
+  "nothing happened" as well: a remote that uses that command for any button
+  cannot be this TV's.
+- Where another brand shares the address, the typical session drops from 26
+  questions to 8.
+- Where the TV is alone on its address, the model does not help yet. That is
+  the open problem.
+
 ## Run it
 
 Python 3.11 or later. No dependencies.
@@ -89,6 +113,7 @@ Python 3.11 or later. No dependencies.
 python -m unittest        # tests
 python -m dna.evaluate    # the tables above (the held-out half)
 python -m dna.evaluate --fold all
+python -m dna.simulate    # questions per session (the held-out half)
 ```
 
 ## Layout
@@ -98,6 +123,7 @@ python -m dna.evaluate --fold all
 | `data/catalogue.json` | Known remotes: protocol, address, button to command |
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
 | `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
+| `dna/simulate.py` | Replays a teach session and counts the questions |
 | `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
 

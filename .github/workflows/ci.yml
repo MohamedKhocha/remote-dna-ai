@@ -20,3 +20,5 @@ jobs:
       # The numbers in the README come from this command and nothing else.
       - name: Evaluation
         run: python -m dna.evaluate
+      - name: Simulation
+        run: python -m dna.simulate
