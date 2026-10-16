@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "source": "https://github.com/MohamedKhocha/remote-dna-ai",
+  "commit": "7ee536b",
+  "catalogue_sha256": "af18fee52a60246b8883c78378a2983357d3d2e0d1899c434b649d5cfd586db3",
+  "mismatch": 0.05,
+  "elsewhere": 0.05,
+  "unknown": 0.5
+}

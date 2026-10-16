@@ -120,8 +120,11 @@ def has_neighbours(where: Where, pool: list[Remote]) -> bool:
     return any(r.where == where for r in pool)
 
 
-def run_session(target: Remote, pool: list[Remote], use_model: bool) -> int:
-    """Questions asked until the target's essentials are all found."""
+def run_session(target: Remote, pool: list[Remote], use_model: bool, trace: list | None = None) -> int:
+    """Questions asked until the target's essentials are all found.
+
+    With `trace`, every question is appended as (command, button or None).
+    """
     targets = [b for b in ESSENTIALS if b in target.commands]
     meaning = {c: b for b, c in target.commands.items()}
     found: set[str] = set()
@@ -149,6 +152,8 @@ def run_session(target: Remote, pool: list[Remote], use_model: bool) -> int:
         button = meaning.get(command)
         if button in targets:
             found.add(button)
+        if trace is not None:
+            trace.append((command, button))
         if session is not None:
             session.learn(command, button)
     return questions
