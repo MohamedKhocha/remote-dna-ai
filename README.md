@@ -144,18 +144,48 @@ python -m dna.simulate    # questions per session (the held-out half)
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
 | `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
 | `dna/simulate.py` | Replays a teach session and counts the questions |
+| `dna/export.py` | Writes the settings and parity fixture the phone app uses |
+| `export/` | Those two files |
 | `demo/` | The browser demo and the same model in JavaScript |
 | `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
+
+## In the app
+
+The app runs the model on the phone, in its "Teach my TV" feature: after every
+answer, the codes the model believes in move to the front of what is left to
+try. `python -m dna.export` writes the settings the app bundles and 40
+recorded sessions its tests replay step by step, so the phone and this
+repository cannot drift apart. See `MODEL_CARD.md` for what it does and does
+not do, and `THREAT_MODEL.md` for how it is kept safe.
 
 ## What existed before, and what is built here
 
 - **Before the Thirduni project month:** the REMOTE DNA app (published on Google
   Play on 4 October 2026), its infrared engine, and the catalogue in `data/`.
   The app's source code is private and is not part of this repository.
-- **Built during the project month:** everything else in this repository.
+- **Built during the project month:** everything else in this repository, and
+  the code in the app that runs the model.
 
-Built by Mohamed Khocha with Claude Code as a coding assistant.
+## Who built what
+
+Mohamed Khocha, alone, with Claude Code (Anthropic's coding agent) as the
+assistant that wrote most of the code under his direction.
+
+- **Mohamed Khocha:** the product and the problem; the decision to measure
+  questions per session rather than accuracy alone; testing on real TVs (an
+  Iris Android TV and a Stream TV); the go/no-go on every result; the app.
+- **Claude Code:** the evaluation method, the model, the simulation, the
+  JavaScript and TypeScript ports with their parity tests, the demo page and
+  the documentation, each reviewed and run before it was committed.
+
+## What happens next
+
+Help the third of TVs that sit alone on their address, starting with code
+layouts shared across addresses. Measure the model against real users'
+mistakes, not only perfect answers. Feed it remotes confirmed in the app,
+with the safeguards in `THREAT_MODEL.md`. Bring the same approach to air
+conditioners.
 
 ## Rights
 
