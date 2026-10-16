@@ -7,7 +7,9 @@ an Android app that turns a phone into the remote for a TV or air conditioner.
 
 When a remote is lost or broken, a TV that works becomes unusable. Remote apps
 carry lists of codes for global brands, but many sets sold in Algeria and North
-Africa carry local brand names that no list knows.
+Africa carry local brand names that no list knows. The same holds in Latin America:
+Semp, Noblex, Kalley, Caixun and Multilaser have no code set in this
+catalogue, and Philco, BGH and AOC have one each.
 
 REMOTE DNA already handles such a TV: it finds the address the TV listens on,
 then learns the buttons one at a time by asking the user what the TV did. That
@@ -20,8 +22,9 @@ It asks one question: **once a few buttons are confirmed, how much of the rest
 of the remote can be predicted?** Every button predicted correctly is a question
 the user is not asked.
 
-Status, 14 October 2026: the data, the evaluation method, two reference
-predictors and a first model are in place, with a simulation of the session the app runs.
+Status, 16 October 2026: the model is evaluated, merged into the app, and
+ships in REMOTE DNA 1.0.8. On a real Iris 43G7200 TV, "Teach my TV" with the
+model on found the TV and learned its buttons.
 
 ## Results so far
 
@@ -154,7 +157,7 @@ python -m dna.simulate    # questions per session (the held-out half)
 
 ## In the app
 
-The app runs the model on the phone, in its "Teach my TV" feature: after every
+Since version 1.0.8, the app runs the model on the phone, in its "Teach my TV" feature: after every
 answer, the codes the model believes in move to the front of what is left to
 try. `python -m dna.export` writes the settings the app bundles and 40
 recorded sessions its tests replay step by step, so the phone and this
