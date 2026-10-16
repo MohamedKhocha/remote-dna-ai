@@ -55,7 +55,11 @@ Session by session on shared addresses, the model asked fewer questions in
 
 - **TVs alone on their address get no help.** A third of the catalogue. On the
   tuning half, letting the model steer there lost 53 sessions and won 21, so it
-  is switched off for them.
+  is switched off for them. One idea was tried and failed: most of these are
+  NEC remotes, and NEC receivers that read only the low byte of the address
+  could be served by remotes sharing that byte. On the tuning half (63 such
+  TVs) the model then won 28 sessions and lost 29, with no change in the
+  median, so it was not kept and the held-out half was not used for it.
 - **It can lose a session.** When the answers point to the wrong remote, it
   chases it for a few questions before the evidence turns.
 - **The simulation assumes perfect answers.** Real users miss a reaction or

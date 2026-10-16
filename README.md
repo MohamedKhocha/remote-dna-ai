@@ -108,7 +108,9 @@ Sessions still unfinished after 300 questions: today 21, model 15.
   when it chases the wrong one.
 - Where the TV is alone on its address, the app keeps today's order. On the
   tuning half, letting the model steer there lost more sessions than it won
-  (53 against 21) and saved nothing overall. This is the open problem.
+  (53 against 21) and saved nothing overall. Treating NEC remotes that share
+  the low byte of the address as neighbours did not help either (28 won, 29
+  lost on the tuning half). This is the open problem.
 
 ## Live demo
 
