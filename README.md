@@ -118,6 +118,34 @@ Sessions still unfinished after 300 questions: today 21, model 15.
   the held-out half (median 49 questions up to 84). Both attempts are in
   `MODEL_CARD.md`. This is the open problem.
 
+## Skipping the search: the model number
+
+The fastest session asks no question at all. Most TVs carry their model
+number on a label at the back, and Flipper-IRDB names each of its dumps after
+the TV or remote it came from. `data/models.json` keeps those names: 253 dumps
+from 64 brands, plus TVs tested by hand (one so far, an IRIS 43G7200). In the
+app, ML Kit reads the label from a photo on the phone (the photo is deleted
+once read), and `dna/models.py`'s search, mirrored in the app, turns the text
+into a remote that one press of power confirms.
+
+`python -m dna.models` checks the search alone: for every indexed model, is
+the right remote returned for a clean label, for one with a region suffix the
+index lacks, and for one with a character misread as its look-alike (0 and O,
+1 and I, 5 and S, 8 and B, 2 and Z)?
+
+| Label | Models | Right remote first | In the top 3 |
+|---|---|---|---|
+| clean | 254 | 99.6% | 99.6% |
+| suffix | 254 | 96.9% | 96.9% |
+| misread | 254 | 96.1% | 96.1% |
+
+What this does not say: how often a real TV is in the index. For the global
+brands sold in Algeria (Samsung, LG, Hisense, TCL) it sometimes is; for local
+brands it almost never is yet: Brandt has two dumps, and Condor, Iris, Stream
+and Skyworth none. Each TV a user teaches and chooses to share can add its
+model, which is how that gap closes. Label photos from real TVs, to measure
+the reading itself, are being collected.
+
 ## Live demo
 
 `demo/index.html` replays a session in the browser: pick any remote, and the
@@ -142,6 +170,7 @@ python -m unittest        # tests
 python -m dna.evaluate    # the tables above (the held-out half)
 python -m dna.evaluate --fold all
 python -m dna.simulate    # questions per session (the held-out half)
+python -m dna.models      # model-number search under simulated misreads
 ```
 
 ## Layout
@@ -149,6 +178,9 @@ python -m dna.simulate    # questions per session (the held-out half)
 | Path | What it is |
 |---|---|
 | `data/catalogue.json` | Known remotes: protocol, address, button to command |
+| `data/models.json` | Model numbers (TVs and remotes) and the remote each points to |
+| `dna/models.py` | Model-number search, and its check under simulated misreads |
+| `experiments/` | Ideas measured and not kept, with their numbers |
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
 | `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
 | `dna/simulate.py` | Replays a teach session and counts the questions |

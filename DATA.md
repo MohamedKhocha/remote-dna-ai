@@ -26,3 +26,16 @@ where they were valid frames of a known protocol.
 ```
 {"v": 1, "brands": [{"b": "<brand>", "s": [{"p": "<protocol>", "a": <address>, "c": {"<button>": <command>}}]}]}
 ```
+
+## Model numbers
+
+`data/models.json` maps model numbers to remotes. Each Flipper-IRDB dump is
+named after the TV or remote it came from (`TVs/Hisense/Hisense_55U6K.ir`);
+the parts of that name with letters and digits both are kept as keys, and the
+dump's fullest code set as the remote. Entries marked `"src": "field"` were
+tested by hand on a real TV; their codes are the app's own and are not
+published here, only the protocol and address they answer on.
+
+```
+{"v": 1, "models": [{"b": "<brand>", "m": "<model as named>", "k": ["<KEY>"], "p": "<protocol>", "a": <address>, "c": {"<button>": <command>}, "src": "flipper" | "field"}]}
+```
