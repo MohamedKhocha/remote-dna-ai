@@ -13,6 +13,33 @@ class ModelSearchTest(unittest.TestCase):
         label = "SKYWORTH GROUP\nMODEL: 43G7200\nAC 100-240V 50/60Hz\nSN 2024A12345678"
         self.assertEqual(models.candidates(label)[0], "43G7200")
 
+    # Transcribed from photos of the two IRIS TVs in the field.
+    IRIS_43G7200 = "\n".join([
+        "ATTENTION:",
+        "POUR EVITER UN CHOC ELECTRIQUE, NE PAS ENLEVER LE COUVERT.",
+        "43G7200",
+        "IRIS",
+        "ALIMENTATION : 100-240V~50/60Hz 95W",
+        "AVERTISSEMENT : HAUTE VOLTAGE",
+    ])
+    IRIS_43E6A = "\n".join([
+        "IRIS", "DOLBY AUDIO HDMI", "ALIMENTATION : 100-240V~50/60Hz 74W",
+        "ASSEMBLED IN ALGERIA", "LED TV", "Model No.: 43E6A",
+    ])
+
+    def test_real_label_without_a_model_word(self):
+        self.assertEqual(models.candidates(self.IRIS_43G7200), ["43G7200"])
+
+    def test_real_label_with_model_no(self):
+        self.assertEqual(models.candidates(self.IRIS_43E6A)[0], "43E6A")
+
+    def test_the_android_tv_points_to_wifi(self):
+        (hit, _), *_ = models.search(self.IRIS_43E6A, self.index)
+        self.assertEqual((hit.label, hit.wifi, hit.protocol), ("43E6A", "androidtv", None))
+
+    def test_skips_serial_numbers(self):
+        self.assertEqual(models.candidates("MODEL: 55U6K\nS/N: 4A5B6C7D8E9F0123"), ["55U6K"])
+
     def test_ignores_sizes_years_and_words(self):
         self.assertEqual(models.candidates("Smart TV 4K 2019 LED"), [])
 

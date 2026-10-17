@@ -22,6 +22,12 @@ from pathlib import Path
 DEFAULT_PATH = Path(__file__).resolve().parent.parent / "data" / "models.json"
 
 MODEL_WORDS = re.compile(r"\b(MODEL|MOD|TYPE|MODEL NO|MODELE|MODÈLE|MODELO)\b", re.I)
+SERIAL_WORDS = re.compile(r"\b(S/?N|SERIAL|SERIE|SÉRIE)\b", re.I)
+
+
+def is_rating(key: str) -> bool:
+    """Electrical ratings look like model numbers: 100-240V~50/60Hz becomes 100240V5060HZ."""
+    return "HZ" in key or bool(re.fullmatch(r"(AC)?\d{2,6}(V|W|VA|MA|KW|VAC)(AC)?", key))
 
 
 @dataclass(frozen=True)
@@ -29,14 +35,19 @@ class Model:
     brand: str
     label: str
     keys: tuple[str, ...]
-    protocol: str
-    address: int
+    protocol: str | None
+    address: int | None
     field: bool
+    # A smart TV reached over Wi-Fi instead, whose infrared remote is not catalogued.
+    wifi: str | None = None
 
 
 def load(path: Path | str = DEFAULT_PATH) -> list[Model]:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
-    return [Model(e["b"], e["m"], tuple(e["k"]), e["p"], e["a"], e["src"] == "field") for e in raw["models"]]
+    return [
+        Model(e["b"], e["m"], tuple(e["k"]), e.get("p"), e.get("a"), e["src"] == "field", e.get("wifi"))
+        for e in raw["models"]
+    ]
 
 
 def model_key(s: str) -> str:
@@ -46,17 +57,22 @@ def model_key(s: str) -> str:
 
 def candidates(text: str) -> list[str]:
     """Strings that could be a model number, likeliest first: four characters
-    or more with letters and digits both; those on a line saying 'Model' first."""
-    scored: list[tuple[int, str]] = []
+    or more with letters and digits both, not an electrical rating, not on a
+    serial-number line. Those on a line saying 'Model' come first, then those
+    of model length (5 to 12). Mirrors the app."""
+    scored: list[tuple[float, str]] = []
     for line in text.splitlines():
         on_model_line = bool(MODEL_WORDS.search(line))
+        if not on_model_line and SERIAL_WORDS.search(line):
+            continue
         for piece in re.split(r"[\s:;,()\[\]]+", line):
             k = model_key(piece)
             if not (4 <= len(k) <= 20) or not re.search(r"[A-Z]", k) or not re.search(r"[0-9]", k):
                 continue
-            if MODEL_WORDS.search(piece):
+            if MODEL_WORDS.search(piece) or is_rating(k):
                 continue
-            scored.append(((10 if on_model_line else 0) + min(len(k), 12), k))
+            shaped = 5 if 5 <= len(k) <= 12 else 0
+            scored.append(((10 if on_model_line else 0) + shaped + min(len(k), 10) / 10, k))
     out: list[str] = []
     for _, k in sorted(scored, key=lambda x: -x[0]):
         if k not in out:
@@ -133,6 +149,8 @@ def retrieval_report(models: list[Model], seed: int = 0) -> str:
     rng = random.Random(seed)
     cases = {"clean": [], "suffix": [], "misread": []}
     for m in models:
+        if m.wifi:  # no infrared codes to compare
+            continue
         key = m.keys[0]
         cases["clean"].append((m, f"MODEL: {key}"))
         cases["suffix"].append((m, f"MODEL: {key}XZT"))

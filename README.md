@@ -123,10 +123,17 @@ Sessions still unfinished after 300 questions: today 21, model 15.
 The fastest session asks no question at all. Most TVs carry their model
 number on a label at the back, and Flipper-IRDB names each of its dumps after
 the TV or remote it came from. `data/models.json` keeps those names: 253 dumps
-from 64 brands, plus TVs tested by hand (one so far, an IRIS 43G7200). In the
-app, ML Kit reads the label from a photo on the phone (the photo is deleted
-once read), and `dna/models.py`'s search, mirrored in the app, turns the text
-into a remote that one press of power confirms.
+from 64 brands, plus TVs tested by hand: an IRIS 43G7200, whose infrared
+remote the app carries, and an IRIS 43E6A, an Android TV that the app pairs
+with over Wi-Fi. In the app, ML Kit reads the label from a photo on the phone
+(the photo is deleted once read), and `dna/models.py`'s search, mirrored in the
+app, turns the text into a remote that one press of power confirms, or into
+the Android TV pairing.
+
+The labels of those two TVs shaped the rules. The 43G7200 prints its model with
+no "Model" word, next to "100-240V~50/60Hz", which also mixes letters and
+digits; so electrical ratings and serial-number lines are skipped. Both labels
+are in the tests.
 
 `python -m dna.models` checks the search alone: for every indexed model, is
 the right remote returned for a clean label, for one with a region suffix the
@@ -143,8 +150,8 @@ What this does not say: how often a real TV is in the index. For the global
 brands sold in Algeria (Samsung, LG, Hisense, TCL) it sometimes is; for local
 brands it almost never is yet: Brandt has two dumps, and Condor, Iris, Stream
 and Skyworth none. Each TV a user teaches and chooses to share can add its
-model, which is how that gap closes. Label photos from real TVs, to measure
-the reading itself, are being collected.
+model, which is how that gap closes. How well ML Kit reads real labels on the
+phone is measured on the device, not here.
 
 ## Live demo
 
