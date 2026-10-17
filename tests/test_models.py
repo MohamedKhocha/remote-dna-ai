@@ -33,6 +33,13 @@ class ModelSearchTest(unittest.TestCase):
     def test_real_label_with_model_no(self):
         self.assertEqual(models.candidates(self.IRIS_43E6A)[0], "43E6A")
 
+    def test_a_model_without_its_screen_size(self):
+        for text in ("G7200", "50G7200"):
+            (hit, score), *_ = models.search(text, self.index)
+            self.assertEqual(hit.label, "43G7200")
+            self.assertGreaterEqual(score, 0.85)
+        self.assertEqual(models.match("E6A", "43E6A"), 0.0)  # too short to tell apart
+
     def test_the_android_tv_points_to_wifi(self):
         (hit, _), *_ = models.search(self.IRIS_43E6A, self.index)
         self.assertEqual((hit.label, hit.wifi, hit.protocol), ("43E6A", "androidtv", None))

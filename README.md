@@ -138,13 +138,16 @@ are in the tests.
 `python -m dna.models` checks the search alone: for every indexed model, is
 the right remote returned for a clean label, for one with a region suffix the
 index lacks, and for one with a character misread as its look-alike (0 and O,
-1 and I, 5 and S, 8 and B, 2 and Z)?
+1 and I, 5 and S, 8 and B, 2 and Z), and for the same model in a screen size
+the index lacks (the leading digits of 43G7200 are its size; one remote drives
+every size)?
 
 | Label | Models | Right remote first | In the top 3 |
 |---|---|---|---|
 | clean | 254 | 99.6% | 99.6% |
 | suffix | 254 | 96.9% | 96.9% |
 | misread | 254 | 96.1% | 96.1% |
+| other size | 51 | 100.0% | 100.0% |
 
 What this does not say: how often a real TV is in the index. For the global
 brands sold in Algeria (Samsung, LG, Hisense, TCL) it sometimes is; for local

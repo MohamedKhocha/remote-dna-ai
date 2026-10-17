@@ -94,14 +94,24 @@ def _distance(a: str, b: str, limit: int) -> int:
     return prev[-1]
 
 
+def model_family(key: str) -> str:
+    """The model without its screen size: 43G7200 and 55G7200 share a remote.
+    Only two or three leading digits followed by a letter count as a size."""
+    return re.sub(r"^\d{2,3}(?=[A-Z])", "", key)
+
+
 def match(candidate: str, key: str) -> float:
-    """1 the same; 0.9 one is the other plus a suffix; 0.8 one character off;
-    0.7 two off on long keys; 0 otherwise. Mirrors the app."""
+    """1 the same; 0.9 one is the other plus a suffix; 0.85 the same family
+    (another size, or none given); 0.8 one character off; 0.7 two off on long
+    keys; 0 otherwise. Mirrors the app."""
     if candidate == key:
         return 1.0
     shorter = min(len(candidate), len(key))
     if shorter >= 5 and (candidate.startswith(key) or key.startswith(candidate)):
         return 0.9
+    fc, fk = model_family(candidate), model_family(key)
+    if len(fc) >= 4 and len(fk) >= 4 and fc == fk:
+        return 0.85
     if shorter >= 5:
         d = _distance(candidate, key, 2)
         if d == 1:
@@ -147,7 +157,7 @@ def retrieval_report(models: list[Model], seed: int = 0) -> str:
     character? Distinct models can share codes, so a hit on the same
     protocol and address counts."""
     rng = random.Random(seed)
-    cases = {"clean": [], "suffix": [], "misread": []}
+    cases = {"clean": [], "suffix": [], "misread": [], "other size": []}
     for m in models:
         if m.wifi:  # no infrared codes to compare
             continue
@@ -155,6 +165,9 @@ def retrieval_report(models: list[Model], seed: int = 0) -> str:
         cases["clean"].append((m, f"MODEL: {key}"))
         cases["suffix"].append((m, f"MODEL: {key}XZT"))
         cases["misread"].append((m, f"MODEL: {misread(key, rng)}"))
+        family = model_family(key)
+        if family != key and len(family) >= 4:  # the same TV in a size the index lacks
+            cases["other size"].append((m, f"MODEL: 99{family}"))
     lines = ["| Label | Models | Right remote first | In the top 3 |", "|---|---|---|---|"]
     for name, items in cases.items():
         top1 = top3 = 0
