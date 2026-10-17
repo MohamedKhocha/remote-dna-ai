@@ -113,7 +113,10 @@ Sessions still unfinished after 300 questions: today 21, model 15.
   tuning half, letting the model steer there lost more sessions than it won
   (53 against 21) and saved nothing overall. Treating NEC remotes that share
   the low byte of the address as neighbours did not help either (28 won, 29
-  lost on the tuning half). This is the open problem.
+  lost on the tuning half). Neither did ordering the sweep by how often the
+  protocol's remotes use each command: it won on the tuning half and lost on
+  the held-out half (median 49 questions up to 84). Both attempts are in
+  `MODEL_CARD.md`. This is the open problem.
 
 ## Live demo
 

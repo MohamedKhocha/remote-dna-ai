@@ -60,6 +60,12 @@ Session by session on shared addresses, the model asked fewer questions in
   could be served by remotes sharing that byte. On the tuning half (63 such
   TVs) the model then won 28 sessions and lost 29, with no change in the
   median, so it was not kept and the held-out half was not used for it.
+  A second idea also failed: instead of sweeping commands 0, 1, 2…, try
+  first the commands the protocol's remotes use most, at any address, and
+  those mostly used for power last (`experiments/lone_prior.py`). On the
+  tuning half it looked good (median 52 questions down to 32; 68 sessions
+  won, 29 lost), so it was measured once on the held-out half, where it was
+  worse (median 49 up to 84; 88 won, 112 lost). It was not kept.
 - **It can lose a session.** When the answers point to the wrong remote, it
   chases it for a few questions before the evidence turns.
 - **The simulation assumes perfect answers.** Real users miss a reaction or
