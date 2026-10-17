@@ -68,6 +68,14 @@ Session by session on shared addresses, the model asked fewer questions in
   worse (median 49 up to 84; 88 won, 112 lost). It was not kept.
 - **It can lose a session.** When the answers point to the wrong remote, it
   chases it for a few questions before the evidence turns.
+- **Asking the most informative question did not help.** Adding information
+  gain to the choice (the expected drop in entropy over the remotes still in
+  play, weighted against the chance of a hit; `experiments/info_gain.py`)
+  asked more questions in total on the tuning half at every weight tried
+  (16,713 questions with today's rule; 16,904 to 17,169 with information
+  gain), and lost more sessions than it won. The held-out half was not used.
+  The likely reason: the goal is to find a few buttons, not to name the
+  remote, and today's rule already aims at the buttons directly.
 - **The simulation assumes perfect answers.** Real users miss a reaction or
   name the wrong button. The app replays and confirms each answer, but the
   model has not been measured against human mistakes yet.
