@@ -22,3 +22,5 @@ jobs:
         run: python -m dna.evaluate
       - name: Simulation
         run: python -m dna.simulate
+      - name: Deep search sweep
+        run: python -m dna.sweep

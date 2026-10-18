@@ -84,6 +84,36 @@ Session by session on shared addresses, the model asked fewer questions in
 - **Infrared TVs only.** Air conditioners send whole climate states, not
   button codes, and are out of scope.
 
+## Before the model: a TV on an address nobody uses
+
+The model needs the TV's address. When no catalogue address reaches the TV,
+the app searches the 720 addresses no catalogue remote uses (`dna/sweep.py`).
+This part is a search procedure, not a learned model: it is measured with the
+same discipline, and it is not tuned on anything.
+
+- **Before (up to 1.0.9):** batches of 24 addresses, one "did anything
+  happen?" per batch. 22.2 answers on average, 37 at worst, about 158 s.
+- **Since 1.0.10:** one continuous sweep, and the user taps "I saw it!" when
+  the channel number changes. The time of the tap picks the sends on air in
+  the 3 s before it; a replay, a halving and a confirmation settle them. 7.4
+  to 8.0 answers on average (tap included), 9 at worst; about 66 to 69 s when
+  the TV knows the first probe, 135 to 138 s when it knows only the second.
+  No TV missed with the hand tapping 0.3 to 2.5 s late.
+
+Limitations of the sweep:
+
+- **A hand more than 3 s late misses the TV.** The window would not contain
+  it; the replay says "nothing", and the sweep carries on past it.
+- **Simulated, not yet measured on people.** The time to look and answer
+  (2.5 s) and the hand's delay are assumptions. The first real test is a
+  Stream TV that no catalogue address reached.
+- **Two probes reach 69% of the catalogue's NEC remotes** (262 of 382). A
+  TV whose remote knows neither probe does not react. Samsung32 and RC6 are
+  covered at 100%, RC5 at 97%, Sony at 94%. The app picks its probes from
+  its own copy of the catalogue (duplicates kept, plus its Skyworth sets), so
+  a probe can differ from the one picked here; the procedure is the same, and
+  the app's tests give the same answer counts and times.
+
 ## Use in the app
 
 The app runs the model on the phone: `app/src/hunter/dna.ts` in the app's
@@ -95,3 +125,5 @@ recorded here, step by step.
 - It only reorders codes. Power and source codes are never moved forward, and
   nothing is saved without the user confirming it.
 - Any error leaves the app's usual order in place.
+- The sweep runs in `app/src/hunter/teach.ts` (`startSweep`, `sweepSuspects`,
+  `tapSweep`), and its tests replay the same simulated TVs and hands.

@@ -22,9 +22,11 @@ It asks one question: **once a few buttons are confirmed, how much of the rest
 of the remote can be predicted?** Every button predicted correctly is a question
 the user is not asked.
 
-Status, 16 October 2026: the model is evaluated, merged into the app, and
-ships in REMOTE DNA 1.0.8. On a real Iris 43G7200 TV, "Teach my TV" with the
-model on found the TV and learned its buttons.
+Status, 18 October 2026: the model is evaluated, merged into the app, and
+ships in REMOTE DNA since 1.0.8. On a real Iris 43G7200 TV, "Teach my TV" with
+the model on found the TV and learned its buttons. Version 1.0.9 added the
+model-number search (photograph the label, or type the number); 1.0.10, built
+on 18 October, replaces the thirty-question deep search with one tap.
 
 ## Results so far
 
@@ -156,6 +158,40 @@ and Skyworth none. Each TV a user teaches and chooses to share can add its
 model, which is how that gap closes. How well ML Kit reads real labels on the
 phone is measured on the device, not here.
 
+## A TV no remote knows: one tap instead of thirty questions
+
+Before any button is learned, the app must find the address the TV listens
+on. When no catalogue address reaches it, as with a real Stream TV, the app
+tries the 720 addresses no catalogue remote uses, with number keys.
+
+Up to 1.0.9 that took batches of 24 addresses and one "did anything happen?"
+per batch: up to 37 answers, nearly all of them "no". A yes/no answer carries
+at most one bit. Since 1.0.10 the phone sends every address back to back
+without stopping, and the user taps "I saw it!" once, when the channel number
+changes. The moment of the tap points to the few sends on air in the 3
+seconds before it, about six bits in a single gesture; a replay, a halving
+and a confirmation settle them. The sweep goes over every address with one
+number key, then again with a second, chosen by greedy set cover, so most
+TVs are found in the first pass.
+
+`python -m dna.sweep` replays it for a TV on every one of the 720 addresses,
+using the app's own frame timings:
+
+| Search | Answers: mean | Answers: max | Time: mean | Missed |
+|---|---|---|---|---|
+| Batches of 24 (up to 1.0.9) | 22.2 | 37 | 158 s | 0 |
+| Sweep, TV knows the first key, tap 0.7 s late | 7.4 | 9 | 66 s | 0 |
+| Sweep, TV knows the first key, tap 1.8 s late | 8.0 | 9 | 69 s | 0 |
+| Sweep, TV knows only the second key, tap 1.8 s late | 8.0 | 9 | 138 s | 0 |
+
+Answers include the tap. Times assume 2.5 s to look and answer each question.
+
+- A stray tap costs two answers, then the sweep carries on.
+- A tap more than 3 s late misses the TV: the one failure case.
+- The two keys reach 69% of the catalogue's NEC remotes and 94% to 100% of
+  the other protocols'; a TV that knows neither does not react.
+- These are simulated hands. The first real test is the Stream TV.
+
 ## Live demo
 
 `demo/index.html` replays a session in the browser: pick any remote, and the
@@ -181,6 +217,7 @@ python -m dna.evaluate    # the tables above (the held-out half)
 python -m dna.evaluate --fold all
 python -m dna.simulate    # questions per session (the held-out half)
 python -m dna.models      # model-number search under simulated misreads
+python -m dna.sweep       # deep search: the sweep against the batches it replaced
 ```
 
 ## Layout
@@ -194,6 +231,7 @@ python -m dna.models      # model-number search under simulated misreads
 | `dna/catalogue.py` | Loads the catalogue and folds exact duplicates |
 | `dna/predict.py` | The baseline, exact matching, and the model (`mixture`) |
 | `dna/simulate.py` | Replays a teach session and counts the questions |
+| `dna/sweep.py` | The deep search: the sweep and the tap, against the old batches |
 | `dna/export.py` | Writes the settings and parity fixture the phone app uses |
 | `export/` | Those two files |
 | `demo/` | The browser demo and the same model in JavaScript |
@@ -206,7 +244,9 @@ Since version 1.0.8, the app runs the model on the phone, in its "Teach my TV" f
 answer, the codes the model believes in move to the front of what is left to
 try. `python -m dna.export` writes the settings the app bundles and 40
 recorded sessions its tests replay step by step, so the phone and this
-repository cannot drift apart. See `MODEL_CARD.md` for what it does and does
+repository cannot drift apart. Since 1.0.9 the app also searches by model
+number, reading the label with ML Kit on the phone; since 1.0.10 its deep
+search is the sweep above. See `MODEL_CARD.md` for what it does and does
 not do, and `THREAT_MODEL.md` for how it is kept safe.
 
 ## What existed before, and what is built here
@@ -215,7 +255,8 @@ not do, and `THREAT_MODEL.md` for how it is kept safe.
   Play on 4 October 2026), its infrared engine, and the catalogue in `data/`.
   The app's source code is private and is not part of this repository.
 - **Built during the project month:** everything else in this repository, and
-  the code in the app that runs the model.
+  in the app the code that runs the model, the model-number search with its
+  on-phone label reading (1.0.9), and the deep-search sweep (1.0.10).
 
 ## Who built what
 
@@ -223,11 +264,15 @@ Mohamed Khocha, alone, with Claude Code (Anthropic's coding agent) as the
 assistant that wrote most of the code under his direction.
 
 - **Mohamed Khocha:** the product and the problem; the decision to measure
-  questions per session rather than accuracy alone; testing on real TVs (an
-  Iris Android TV and a Stream TV); the go/no-go on every result; the app.
+  questions per session rather than accuracy alone; the request for a deep
+  search that saves both time and questions; the choice to read labels on the
+  phone, offline; testing on real TVs (an Iris 43G7200 on a Skyworth chassis,
+  an Iris 43E6A Android TV and a Stream TV) and photographing their labels; the
+  go/no-go on every result; the app.
 - **Claude Code:** the evaluation method, the model, the simulation, the
-  JavaScript and TypeScript ports with their parity tests, the demo page and
-  the documentation, each reviewed and run before it was committed.
+  model-number search, the sweep and its simulation, the JavaScript and
+  TypeScript ports with their parity tests, the demo page and the
+  documentation, each reviewed and run before it was committed.
 
 ## What happens next
 
