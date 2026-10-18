@@ -57,6 +57,33 @@
   footer { margin-top: 22px; font-size: 13px; color: var(--dim); }
   a { color: var(--accent); }
   .err { color: #d14343; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; font-size: 14px; }
+  .toc a { text-decoration: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); }
+  h2.sec { font-size: 22px; margin: 40px 0 6px; }
+  .deep-grid { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 720px) { .deep-grid { grid-template-columns: 1fr; } }
+  .tv { background: #10141f; border-radius: 12px; padding: 10px; }
+  .screen { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; background: linear-gradient(135deg, #1d3557, #2a9d8f);
+            display: flex; align-items: flex-start; justify-content: flex-end; padding: 8px 10px; overflow: hidden; }
+  .screen .ch { color: #fff; font: 700 14px/1 ui-monospace, monospace; opacity: .85; }
+  .osd { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff;
+         font: 800 54px/1 ui-monospace, monospace; background: rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; }
+  .osd.on { opacity: 1; }
+  .stand { width: 60px; height: 10px; margin: 6px auto 0; border-radius: 0 0 6px 6px; background: #10141f; }
+  .tv-note { font-size: 12px; color: var(--dim); margin-top: 8px; }
+  button.saw { background: var(--good); border-color: var(--good); color: #fff; font-size: 18px; padding: 12px 22px; }
+  .meter { height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; margin: 4px 0 8px; }
+  .meter div { height: 8px; width: 0; background: var(--accent); }
+  .hits { list-style: none; margin: 10px 0 0; padding: 0; }
+  .hits li { padding: 10px 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .hits .what { color: var(--dim); font-size: 14px; }
+  .score { font-weight: 700; color: var(--accent); }
+  textarea { width: 100%; font: inherit; border-radius: 10px; border: 1px solid var(--line); background: var(--card);
+             color: var(--text); padding: 9px 12px; resize: vertical; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+  .examples button { font-size: 13px; padding: 4px 10px; font-weight: 500; }
+  .facts.two { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 720px) { .facts.two { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -68,8 +95,13 @@
     catalogue. That remote's brand is removed from everything the model can see, exactly as for a TV
     no list knows. Both sides stop when volume up, volume down, mute, OK and back are found.
   </p>
+  <nav class="toc">
+    <a href="#teach">1. Learning the buttons</a>
+    <a href="#deep">2. Deep search: one tap</a>
+    <a href="#model">3. Find by model</a>
+  </nav>
 
-  <div class="card">
+  <div class="card" id="teach">
     <div class="pick">
       <div>
         <label for="brand">Brand</label>
@@ -115,9 +147,66 @@
     <div class="card fact"><b>No gain yet</b><span>when the TV is alone on its address (207 remotes): the app keeps its usual order there</span></div>
   </div>
 
+  <h2 class="sec" id="deep">Deep search: one tap instead of thirty questions</h2>
+  <p class="lead">
+    Before learning buttons, the app must find the address the TV listens on. When no remote in the catalogue
+    reaches it, the phone tries the 720 addresses nobody uses, with number keys. It used to ask "did anything
+    happen?" after every 24 addresses, up to 37 times. Now it sends them all without stopping, and you tap once
+    when the channel number changes: the moment of the tap points to the few addresses on air just before it.
+    Here the page hides a TV on one of those addresses. Press start, watch its screen, and tap.
+  </p>
+  <div class="card">
+    <div class="deep-grid">
+      <div>
+        <div class="tv"><div class="screen"><span class="ch" id="tv-ch">CH 12</span><div class="osd" id="tv-osd"></div></div></div>
+        <div class="stand"></div>
+        <div class="tv-note" id="tv-note"></div>
+      </div>
+      <div>
+        <div class="actions">
+          <button class="primary" id="d-start" disabled>Start the sweep</button>
+          <button class="saw" id="d-saw" disabled>I saw it!</button>
+          <button id="d-new" disabled>New hidden TV</button>
+        </div>
+        <label for="d-speed">Speed</label>
+        <select id="d-speed">
+          <option value="1">As on the phone</option>
+          <option value="3">3× faster (a few more questions after the tap)</option>
+        </select>
+        <div class="meter"><div id="d-bar"></div></div>
+        <div class="target" id="d-now">Loading the catalogue…</div>
+        <div class="done" id="d-result"></div>
+        <ul class="log" id="d-log"></ul>
+      </div>
+    </div>
+  </div>
+  <div class="facts two">
+    <div class="card fact"><b>22 → 8</b><span>answers on average to find a TV on an unknown address, the tap included; 37 → 9 at worst (all 720 addresses, simulated hands)</span></div>
+    <div class="card fact"><b>158 s → 66 s</b><span>on average when the TV knows the first number key; a tap more than 3 s late is the one case that misses</span></div>
+  </div>
+
+  <h2 class="sec" id="model">Find by model: no question at all</h2>
+  <p class="lead">
+    Most TVs carry their model number on a label at the back. In the app, ML Kit reads a photo of it on the
+    phone, offline, and the photo is deleted. Your browser cannot run that reader, so type the model or paste
+    a label's text: the search below is the one the app runs on what it reads.
+  </p>
+  <div class="card">
+    <label for="m-text">Model number, or the text of a label</label>
+    <textarea id="m-text" rows="3" placeholder="e.g. 43G7200"></textarea>
+    <div class="examples" id="m-examples"></div>
+    <div class="target" id="m-read"></div>
+    <ul class="hits" id="m-hits"></ul>
+  </div>
+  <div class="facts two">
+    <div class="card fact"><b>99.6%</b><span>right remote first for a clean label (254 indexed models); 96.1% with one character misread, as 0 for O</span></div>
+    <div class="card fact"><b>Local brands: a gap</b><span>Condor, Iris, Stream and Skyworth TVs are almost absent from public dumps; each TV a user teaches and shares can add its model</span></div>
+  </div>
+
   <footer>
-    Numbers are medians from <code>python -m dna.simulate</code> on the half of the brands nothing was tuned on.
-    This page runs the same model, checked to ask exactly the same questions as the Python on every remote.
+    Learning: medians from <code>python -m dna.simulate</code> on the half of the brands nothing was tuned on.
+    Deep search: <code>python -m dna.sweep</code>. Model search: <code>python -m dna.models</code>.
+    This page runs the same code in JavaScript, checked by tests to give exactly the same answers as the Python.
     REMOTE DNA by Solar AI Systems. Catalogue built from Flipper-IRDB and irdb.
     Contains/accesses irdb by Simon Peter and contributors, used under permission. For licensing details and for
     information on how to contribute to the database, see <a href="https://github.com/probonopd/irdb">github.com/probonopd/irdb</a>.
@@ -245,5 +334,6 @@ try {
   $('target').innerHTML = `<span class="err">The catalogue could not be loaded. Open this page through a web server, not as a file.</span>`;
 }
 </script>
+<script type="module" src="./extra.js"></script>
 </body>
 </html>

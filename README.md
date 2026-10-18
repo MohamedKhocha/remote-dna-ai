@@ -194,11 +194,23 @@ Answers include the tap. Times assume 2.5 s to look and answer each question.
 
 ## Live demo
 
-`demo/index.html` replays a session in the browser: pick any remote, and the
-page plays the TV while today's order and the model race side by side, with
-the reason for each of the model's choices. `demo/dna.js` is the same model
-in JavaScript; `tests/test_parity.py` checks it asks exactly the same
-questions as the Python on every remote.
+`demo/index.html` (live at https://mohamedkhocha.github.io/remote-dna/demo/)
+has three parts, each running the same code as the Python, in JavaScript:
+
+1. **Learning the buttons:** pick any remote, and the page plays the TV while
+   today's order and the model race side by side, with the reason for each
+   of the model's choices (`demo/dna.js`).
+2. **Deep search:** the page hides a TV on one of the 720 unknown addresses,
+   sends them in real time, and the visitor taps "I saw it!" when the drawn
+   TV's channel number changes; the replay, halving and confirmation follow,
+   next to what the old batch search would have asked (`demo/sweep.js`).
+3. **Find by model:** type a model number or paste a label's text
+   (`demo/models.js`). Reading a photo needs ML Kit, which runs only in the
+   app.
+
+`tests/test_parity.py` checks that all three give exactly the same answers
+as the Python: every remote's session, more than a thousand model searches,
+and 160 deep searches with three different hands.
 
 To run it locally, serve the repository root and open the demo:
 
@@ -234,7 +246,7 @@ python -m dna.sweep       # deep search: the sweep against the batches it replac
 | `dna/sweep.py` | The deep search: the sweep and the tap, against the old batches |
 | `dna/export.py` | Writes the settings and parity fixture the phone app uses |
 | `export/` | Those two files |
-| `demo/` | The browser demo and the same model in JavaScript |
+| `demo/` | The browser demo: the model, the deep search and the model-number search in JavaScript |
 | `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
 
