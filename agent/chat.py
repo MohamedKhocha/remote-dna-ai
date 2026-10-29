@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from langchain.messages import HumanMessage
 from langgraph.types import Command
 
-from .remote_agent import build_agent
+from .remote_agent import build_agent, photo_message
 from .tools import VirtualTV
 
 NAMES = {"volUp": "volume up", "volDown": "volume down", "chUp": "channel up", "chDown": "channel down",
@@ -45,7 +45,10 @@ def main() -> None:
             text = input("you> ").strip()
             if not text:
                 return
-            payload = {"messages": [HumanMessage(text)]}
+            if text.startswith("/photo "):
+                payload = {"messages": [photo_message(text[7:].strip().strip('"'))]}
+            else:
+                payload = {"messages": [HumanMessage(text)]}
         result = agent.invoke(payload, config)
         payload = None
         if "__interrupt__" in result:

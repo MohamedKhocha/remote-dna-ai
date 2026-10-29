@@ -12,7 +12,7 @@ try:
     from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
     from langgraph.types import Command
 
-    from agent.remote_agent import build_agent
+    from agent.remote_agent import build_agent, photo_message
 except ImportError:  # pragma: no cover
     GenericFakeChatModel = None
 
@@ -58,6 +58,18 @@ class AgentFlowTest(unittest.TestCase):
     def test_a_refused_send_never_reaches_the_tv(self):
         _, _, _, sent = self.run_session({"type": "reject", "message": "no"})
         self.assertEqual(sent, [])
+
+
+    def test_a_label_photo_travels_as_base64_with_its_type(self):
+        import base64
+        from pathlib import Path
+
+        path = Path(__file__).resolve().parent.parent / "agent" / "labels" / "label-iris.png"
+        msg = photo_message(str(path))
+        text, image = msg.content
+        self.assertEqual(text["type"], "text")
+        self.assertEqual((image["type"], image["mime_type"]), ("image", "image/png"))
+        self.assertEqual(base64.b64decode(image["base64"]), path.read_bytes())
 
 
 if __name__ == "__main__":
