@@ -18,6 +18,7 @@ existed before; this folder is new.
 | Multi-agent systems | `team.py`: an identifier sub-agent owns the two lookup tools; the main agent calls it as `identify_tv` and keeps the address, the approvals and the confirmations (`python -m agent.team`) |
 | MCP | `mcp_server.py` offers the read-only tools to any MCP client; `mcp_agent.py` reaches it over stdio like any client would, plus Tavily's hosted MCP server for web search |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
+| Middleware | doors in the loop the model cannot talk past: at most 12 model calls per turn (`ModelCallLimitMiddleware`) and 60 codes per session (`ToolCallLimitMiddleware`), both tested |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
 | Personal chef project (LangGraph Studio) | `agent/studio.py` and `langgraph.json`: `langgraph dev` opens the agent in Studio, every step visible |
 

@@ -101,5 +101,30 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(out["protocol"], "samsung32")
 
 
+    def test_the_send_limit_stops_a_session_that_keeps_sending(self):
+        sent = []
+        script = iter([
+            call("choose_address", {"protocol": "samsung32", "address": 14}, 1),
+            call("send_code", {"button": "volUp"}, 2),
+            call("send_code", {"button": "mute"}, 3),
+            AIMessage("Stopped."),
+        ])
+        agent = build_agent(model=ScriptedModel(messages=script), send_limit=1,
+                            sender=lambda p, a, c: sent.append(c) or "sent")
+        cfg = {"configurable": {"thread_id": "limit"}}
+        out = agent.invoke({"messages": [HumanMessage("go")]}, cfg)
+        while "__interrupt__" in out:
+            n = len(out["__interrupt__"][0].value["action_requests"])
+            out = agent.invoke(Command(resume={"decisions": [{"type": "approve"}] * n}), cfg)
+        self.assertEqual(sent, [20], "only the first send gets through")
+
+    def test_a_turn_cannot_call_the_model_forever(self):
+        loop = iter([call("user_context", {}, i) for i in range(50)])
+        agent = build_agent(model=ScriptedModel(messages=loop), turn_limit=3)
+        out = agent.invoke({"messages": [HumanMessage("hi")]}, {"configurable": {"thread_id": "turn"}})
+        calls = sum(1 for m in out["messages"] if getattr(m, "tool_calls", None))
+        self.assertLessEqual(calls, 3)
+
+
 if __name__ == "__main__":
     unittest.main()

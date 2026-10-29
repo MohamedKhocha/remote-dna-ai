@@ -16,7 +16,7 @@ from typing import Callable
 from typing_extensions import NotRequired
 
 from langchain.agents import AgentState, create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from langchain.chat_models import init_chat_model
 from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain.messages import ToolMessage
@@ -200,8 +200,14 @@ def make_model(model=None):
     return model
 
 
+# Doors in the loop (the middleware class): limits the model cannot talk its way past.
+TURN_LIMIT = 12   # model calls in one user turn; the demo page uses the same cap
+SEND_LIMIT = 60   # codes sent in one session; a teach session rarely needs half
+
+
 def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True,
-                tools=None, system_prompt: str = SYSTEM_PROMPT):
+                tools=None, system_prompt: str = SYSTEM_PROMPT,
+                turn_limit: int = TURN_LIMIT, send_limit: int = SEND_LIMIT):
     """`model` is a LangChain chat model or a "provider:name" string.
     `memory=False` leaves persistence to the host, as LangGraph Studio requires.
     `tools` replaces the default tool list (agent/team.py uses it)."""
@@ -212,8 +218,14 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
         state_schema=RemoteState,
         context_schema=RemoteContext,
         checkpointer=(checkpointer or InMemorySaver()) if memory else None,
-        middleware=[HumanInTheLoopMiddleware(
+        middleware=[
+            # A turn that loops cannot burn the quota or keep the user waiting forever.
+            ModelCallLimitMiddleware(run_limit=turn_limit, exit_behavior="end"),
+            # A session that keeps sending is going nowhere; stop it rather than spam the TV.
+            ToolCallLimitMiddleware(tool_name="send_code", thread_limit=send_limit),
+            HumanInTheLoopMiddleware(
             interrupt_on={"send_code": {"allowed_decisions": ["approve", "reject"]}},
             description_prefix="Point the phone at the TV. Send this code?",
-        )],
+            ),
+        ],
     )
