@@ -133,6 +133,8 @@ def build_tools(sender: Sender = _no_sender):
     @tool
     def choose_address(protocol: str, address: int, runtime: ToolRuntime) -> Command:
         """Remember the protocol and address to test, and forget earlier confirmations."""
+        # Another agent may write "Samsung32"; the catalogue says "samsung32".
+        protocol = protocol.strip().lower()
         if f"{protocol} {address}" in (runtime.state.get("ruled_out") or []):
             return Command(update={"messages": [ToolMessage(
                 f"{protocol} {address} was already ruled out: the TV ignored it. Pick another address.",
@@ -187,19 +189,26 @@ def build_tools(sender: Sender = _no_sender):
             confirm_button, predict_buttons, remote_summary]
 
 
-def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True):
-    """`model` is a LangChain chat model or a "provider:name" string.
-    `memory=False` leaves persistence to the host, as LangGraph Studio requires."""
+def make_model(model=None):
+    """A chat model from a "provider:name" string, or the one given."""
     if model is None or isinstance(model, str):
         # A remote service is slow or down now and then: bound the wait.
         model = init_chat_model(model or os.environ.get("REMOTE_DNA_MODEL", DEFAULT_MODEL),
                                 timeout=60, max_retries=3,
                                 # Free tiers allow a few requests a minute; an agent turn makes several.
                                 rate_limiter=InMemoryRateLimiter(requests_per_second=0.2))
+    return model
+
+
+def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True,
+                tools=None, system_prompt: str = SYSTEM_PROMPT):
+    """`model` is a LangChain chat model or a "provider:name" string.
+    `memory=False` leaves persistence to the host, as LangGraph Studio requires.
+    `tools` replaces the default tool list (agent/team.py uses it)."""
     return create_agent(
-        model=model,
-        tools=build_tools(sender),
-        system_prompt=SYSTEM_PROMPT,
+        model=make_model(model),
+        tools=tools if tools is not None else build_tools(sender),
+        system_prompt=system_prompt,
         state_schema=RemoteState,
         context_schema=RemoteContext,
         checkpointer=(checkpointer or InMemorySaver()) if memory else None,

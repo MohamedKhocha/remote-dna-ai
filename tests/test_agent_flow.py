@@ -94,5 +94,12 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("already ruled out", out["messages"][-2].text)
 
 
+    def test_a_protocol_written_by_another_agent_is_normalised(self):
+        script = iter([call("choose_address", {"protocol": "Samsung32", "address": 14}, 1), AIMessage("ok")])
+        agent = build_agent(model=ScriptedModel(messages=script))
+        out = agent.invoke({"messages": [HumanMessage("go")]}, {"configurable": {"thread_id": "n"}})
+        self.assertEqual(out["protocol"], "samsung32")
+
+
 if __name__ == "__main__":
     unittest.main()

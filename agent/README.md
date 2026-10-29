@@ -15,6 +15,7 @@ existed before; this folder is new.
 | Tools | `find_model`, `brand_addresses`, `predict_buttons` over the catalogue (`tools.py`) |
 | Short-term memory, state | `RemoteState` keeps the address and the confirmed buttons; a checkpointer keeps the conversation |
 | Context and state | `RemoteContext` (country, language, whether the phone has an infrared emitter) is fixed and read through `user_context`; state is what the agent learns: the address, confirmed buttons, and addresses the TV ignored (`rule_out_address`) |
+| Multi-agent systems | `team.py`: an identifier sub-agent owns the two lookup tools; the main agent calls it as `identify_tv` and keeps the address, the approvals and the confirmations (`python -m agent.team`) |
 | MCP | `mcp_server.py` offers the read-only tools to any MCP client; `mcp_agent.py` reaches it over stdio like any client would, plus Tavily's hosted MCP server for web search |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
@@ -54,6 +55,23 @@ works: `REMOTE_DNA_MODEL=anthropic:claude-...` or `openai:...` in `.env`.
   on held-out brands by `python -m dna.evaluate` (see the main README).
 - In the app the phone's infrared emitter sends the code; here `send_code`
   calls whatever sender it is given.
+
+## Splitting the agent: what the first live run showed
+
+The multi-agent class warns that the main agent sees only a sub-agent's final
+answer. On the first live run (29 October, "a Condor TV, label MODEL:
+43G7200") that answer had two faults. It blended the brands ("Condor, IRIS
+compatible") and added two addresses no tool had returned; and it wrote the
+protocol as "Samsung32", which the catalogue spells "samsung32", so the first
+send would have found no code at all. The main agent trusted all of it.
+
+Fixed the same day: `choose_address` normalises the protocol (with a test),
+and the identifier must copy what the tools return and say when the brand and
+the model disagree. The rerun answered "Condor (Model 43G7200 is registered
+to IRIS) / samsung32, address 14", and the session went on to the approval.
+The lesson holds either way: sending stays in the main agent, under one
+approval rule, so a sub-agent's mistake can cost a question but never a code
+sent without the user's yes.
 
 ## Local brands through MCP: what the web can and cannot tell
 
