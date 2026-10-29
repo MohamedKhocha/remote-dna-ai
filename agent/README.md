@@ -14,6 +14,7 @@ existed before; this folder is new.
 | Foundational models | `create_agent` with Gemini; timeout, retries and a rate limiter on the model |
 | Tools | `find_model`, `brand_addresses`, `predict_buttons` over the catalogue (`tools.py`) |
 | Short-term memory, state | `RemoteState` keeps the address and the confirmed buttons; a checkpointer keeps the conversation |
+| Context and state | `RemoteContext` (country, language, whether the phone has an infrared emitter) is fixed and read through `user_context`; state is what the agent learns: the address, confirmed buttons, and addresses the TV ignored (`rule_out_address`) |
 | MCP | `mcp_server.py` offers the read-only tools to any MCP client; `mcp_agent.py` reaches it over stdio like any client would, plus Tavily's hosted MCP server for web search |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
@@ -24,7 +25,7 @@ existed before; this folder is new.
 ```
 pip install -r agent/requirements.txt     # Python 3.12 or 3.13
 echo GOOGLE_API_KEY=your-key > .env       # free key: aistudio.google.com/apikey
-python -m agent.chat                      # talk to it; the TV is a virtual IRIS 43G7200
+python -m agent.chat --language fr        # talk to it; the TV is a virtual IRIS 43G7200
 python -m agent.mcp_server                # or plug the tools into Claude, Cursor or Codex
 python -m agent.injection_check           # the multimodal class's injection, on this agent
 python -m agent.mcp_agent "Who makes Starlight TVs?"   # our MCP server + Tavily's (TAVILY_API_KEY)

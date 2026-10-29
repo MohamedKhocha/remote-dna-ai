@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from langchain.messages import HumanMessage
 from langgraph.types import Command
 
-from .remote_agent import build_agent, photo_message
+from .remote_agent import RemoteContext, build_agent, photo_message
 from .tools import VirtualTV
 
 NAMES = {"volUp": "volume up", "volDown": "volume down", "chUp": "channel up", "chDown": "channel down",
@@ -29,7 +29,11 @@ def main() -> None:
     load_dotenv(Path(__file__).resolve().parent.parent / ".env")
     ap = argparse.ArgumentParser()
     ap.add_argument("--tv", default="43G7200", help="model number of the virtual TV")
-    tv = VirtualTV.from_model(ap.parse_args().tv)
+    ap.add_argument("--country", default="DZ")
+    ap.add_argument("--language", default="ar", help="ar, fr or en")
+    args = ap.parse_args()
+    tv = VirtualTV.from_model(args.tv)
+    context = RemoteContext(country=args.country, language=args.language)
 
     def sender(protocol: str, address: int, command: int) -> str:
         seen = tv.receive(protocol, address, command)
@@ -49,7 +53,7 @@ def main() -> None:
                 payload = {"messages": [photo_message(text[7:].strip().strip('"'))]}
             else:
                 payload = {"messages": [HumanMessage(text)]}
-        result = agent.invoke(payload, config)
+        result = agent.invoke(payload, config, context=context)
         payload = None
         if "__interrupt__" in result:
             decisions = []

@@ -10,6 +10,7 @@ turns, and a human in the loop: nothing is sent to the TV without a yes.
 from __future__ import annotations
 
 import os
+from dataclasses import asdict, dataclass
 from typing import Callable
 
 from typing_extensions import NotRequired
@@ -32,13 +33,16 @@ SYSTEM_PROMPT = """You are Remote DNA, an assistant that rebuilds a lost or brok
 on the user's phone. The phone sends infrared codes; the user tells you what the TV did.
 
 How a session goes:
+0. Call user_context first: it says the user's country, language, and whether the phone can
+   send infrared at all. If it cannot, say so and stop: no remote can be rebuilt.
 1. Find where the TV listens (an infrared protocol and an address). If the user has the
    model number from the label, call find_model. Otherwise call brand_addresses.
    Then call choose_address with the best candidate.
 2. Test ONE button with send_code, one call at a time, never two at once. Start with volUp or mute, never power: a wrong power
    code is harmless but a right one turns the TV off.
 3. Ask the user what the TV did. Only when they say it reacted, call confirm_button with
-   the command that was sent. If nothing happened, try the next candidate address.
+   the command that was sent. If nothing happened, call rule_out_address, then try the
+   next candidate address that is not ruled out.
 4. Once one button is confirmed, call predict_buttons and test the predictions one by one,
    in the order given: power comes last.
 5. Finish with remote_summary.
@@ -49,7 +53,8 @@ Rules:
   then call find_model with them.
 - Never say a code works until the user has confirmed it.
 - If find_model says the TV is reached over Wi-Fi, say so: infrared will not help.
-- Reply in the user's language (Arabic, French or English), in two or three short sentences.
+- Reply in the language user_context gives, unless the user writes in another one, in two
+  or three short sentences.
 """
 
 
@@ -68,11 +73,23 @@ def photo_message(path: str, text: str = "Here is a photo of my TV's label."):
     ])
 
 
+@dataclass
+class RemoteContext:
+    """Facts about the user, fixed for the whole session (the context-and-state
+    class): the agent can read them through user_context but never change them.
+    In the app they come from the phone's settings."""
+    country: str = "DZ"
+    language: str = "ar"
+    phone_has_ir: bool = True
+
+
 class RemoteState(AgentState):
-    # Filled by the tools during a session, never by the caller.
+    """What the agent learns during the session and may change."""
     protocol: NotRequired[str]
     address: NotRequired[int]
     confirmed: NotRequired[dict[str, int]]
+    # Addresses the TV ignored, so the agent does not try them twice.
+    ruled_out: NotRequired[list[str]]
 
 
 # Where send_code delivers a code. The terminal demo plugs in a virtual TV;
@@ -86,6 +103,24 @@ def _no_sender(protocol: str, address: int, command: int) -> str:
 
 def build_tools(sender: Sender = _no_sender):
     @tool
+    def user_context(runtime: ToolRuntime) -> dict:
+        """The user's country, preferred language, and whether the phone has an infrared emitter."""
+        ctx = runtime.context
+        return asdict(ctx) if ctx is not None else asdict(RemoteContext())
+
+    @tool
+    def rule_out_address(runtime: ToolRuntime) -> Command:
+        """Record that the TV did not react on the address being tested."""
+        protocol, address = runtime.state.get("protocol"), runtime.state.get("address")
+        ruled = list(runtime.state.get("ruled_out") or [])
+        if protocol is not None and f"{protocol} {address}" not in ruled:
+            ruled.append(f"{protocol} {address}")
+        return Command(update={
+            "ruled_out": ruled,
+            "messages": [ToolMessage(f"Ruled out: {', '.join(ruled) or 'nothing yet'}.", tool_call_id=runtime.tool_call_id)],
+        })
+
+    @tool
     def find_model(label_text: str, brand: str = "") -> list[dict]:
         """Find the TV from a model number read on its label or typed by the user."""
         return dna_tools.find_model(label_text, brand or None)
@@ -98,6 +133,10 @@ def build_tools(sender: Sender = _no_sender):
     @tool
     def choose_address(protocol: str, address: int, runtime: ToolRuntime) -> Command:
         """Remember the protocol and address to test, and forget earlier confirmations."""
+        if f"{protocol} {address}" in (runtime.state.get("ruled_out") or []):
+            return Command(update={"messages": [ToolMessage(
+                f"{protocol} {address} was already ruled out: the TV ignored it. Pick another address.",
+                tool_call_id=runtime.tool_call_id)]})
         return Command(update={
             "protocol": protocol,
             "address": address,
@@ -144,7 +183,8 @@ def build_tools(sender: Sender = _no_sender):
         return {"protocol": runtime.state.get("protocol"), "address": runtime.state.get("address"),
                 "confirmed": runtime.state.get("confirmed") or {}}
 
-    return [find_model, brand_addresses, choose_address, send_code, confirm_button, predict_buttons, remote_summary]
+    return [user_context, find_model, brand_addresses, choose_address, send_code, rule_out_address,
+            confirm_button, predict_buttons, remote_summary]
 
 
 def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True):
@@ -161,6 +201,7 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
         tools=build_tools(sender),
         system_prompt=SYSTEM_PROMPT,
         state_schema=RemoteState,
+        context_schema=RemoteContext,
         checkpointer=(checkpointer or InMemorySaver()) if memory else None,
         middleware=[HumanInTheLoopMiddleware(
             interrupt_on={"send_code": {"allowed_decisions": ["approve", "reject"]}},

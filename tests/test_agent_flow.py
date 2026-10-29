@@ -12,7 +12,7 @@ try:
     from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
     from langgraph.types import Command
 
-    from agent.remote_agent import build_agent, photo_message
+    from agent.remote_agent import RemoteContext, build_agent, photo_message
 except ImportError:  # pragma: no cover
     GenericFakeChatModel = None
 
@@ -70,6 +70,28 @@ class AgentFlowTest(unittest.TestCase):
         self.assertEqual(text["type"], "text")
         self.assertEqual((image["type"], image["mime_type"]), ("image", "image/png"))
         self.assertEqual(base64.b64decode(image["base64"]), path.read_bytes())
+
+
+    def test_context_reaches_the_agent_only_through_its_tool(self):
+        script = iter([call("user_context", {}, 1), AIMessage("Je vous réponds en français.")])
+        agent = build_agent(model=ScriptedModel(messages=script))
+        out = agent.invoke({"messages": [HumanMessage("salut")]}, {"configurable": {"thread_id": "c"}},
+                           context=RemoteContext(country="FR", language="fr", phone_has_ir=False))
+        tool_msg = next(m for m in out["messages"] if getattr(m, "name", None) == "user_context")
+        self.assertIn('"language": "fr"', tool_msg.text.replace("'", '"'))
+        self.assertIn('"phone_has_ir": false', tool_msg.text.replace("'", '"').replace("False", "false"))
+
+    def test_a_ruled_out_address_is_not_tested_again(self):
+        script = iter([
+            call("choose_address", {"protocol": "nec", "address": 4}, 1),
+            call("rule_out_address", {}, 2),
+            call("choose_address", {"protocol": "nec", "address": 4}, 3),
+            AIMessage("That address was already tried."),
+        ])
+        agent = build_agent(model=ScriptedModel(messages=script))
+        out = agent.invoke({"messages": [HumanMessage("nothing happened")]}, {"configurable": {"thread_id": "r"}})
+        self.assertEqual(out["ruled_out"], ["nec 4"])
+        self.assertIn("already ruled out", out["messages"][-2].text)
 
 
 if __name__ == "__main__":
