@@ -17,7 +17,7 @@ from typing_extensions import NotRequired
 
 from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import (HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ModelFallbackMiddleware,
-                                         ToolCallLimitMiddleware)
+                                         PIIMiddleware, ToolCallLimitMiddleware)
 from langchain.chat_models import init_chat_model
 from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain.messages import ToolMessage
@@ -213,6 +213,20 @@ def make_model(model=None):
     return model
 
 
+# Personal data a user might type by mistake never reaches the model provider. Phone
+# numbers: Algerian mobiles (05, 06, 07 and eight digits) and international numbers.
+# Model numbers mix letters and digits (43G7200), so they are not caught.
+PHONE = r"(?:\+|\b00)\d{1,3}(?:[\s.-]?\d){8,11}\b|\b0[5-7](?:[\s.-]?\d){8}\b"
+
+
+def privacy_middleware():
+    return [
+        PIIMiddleware("email", strategy="redact"),
+        PIIMiddleware("credit_card", strategy="redact"),
+        PIIMiddleware("phone", detector=PHONE, strategy="redact"),
+    ]
+
+
 # Doors in the loop (the middleware class): limits the model cannot talk its way past.
 TURN_LIMIT = 12   # model calls in one user turn; the demo page uses the same cap
 SEND_LIMIT = 60   # codes sent in one session; a teach session rarely needs half
@@ -236,6 +250,8 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
         context_schema=RemoteContext,
         checkpointer=(checkpointer or InMemorySaver()) if memory else None,
         middleware=[
+            # Redact emails, card and phone numbers before anything is sent to the model.
+            *privacy_middleware(),
             # A turn that loops cannot burn the quota or keep the user waiting forever.
             ModelCallLimitMiddleware(run_limit=turn_limit, exit_behavior="end"),
             # A session that keeps sending is going nowhere; stop it rather than spam the TV.

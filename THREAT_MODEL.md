@@ -46,6 +46,12 @@ the phone, offline, and the label photo is deleted after reading (the line
 the Zero to Verified class draws). Bringing the agent into the app needs a
 paid tier or a provider that does not train on the data, behind our server.
 
+Before anything is sent, `PIIMiddleware` redacts emails, card numbers and
+phone numbers (Algerian mobiles and international numbers) a user might type
+by mistake; model numbers, which mix letters and digits, pass through
+(`tests/test_agent_privacy.py`). Tracing in LangSmith also stores
+conversations: off by default, and to be turned off or masked in production.
+
 Spending: the Gemini and Tavily keys used here are on free tiers with no
 billing attached, so a runaway loop stops at the quota, not at a bill. If
 billing is ever enabled, a spending limit goes on the key first.
