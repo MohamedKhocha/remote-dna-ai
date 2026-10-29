@@ -59,6 +59,23 @@ works: `REMOTE_DNA_MODEL=anthropic:claude-...` or `openai:...` in `.env`.
 - In the app the phone's infrared emitter sends the code; here `send_code`
   calls whatever sender it is given.
 
+## RAG: the decision not to use embeddings (the RAG class)
+
+The class asks you to estimate your knowledge before reaching for RAG. Ours is
+the catalogue (about 69,000 tokens) and the model index (about 19,000): it
+would fit in one context window, and retrieval already exists, as tools. We
+do not embed it, for a reason specific to this data: a model number is a code,
+not a meaning. An embedding puts 43G7200 next to 43G7100 because they look
+alike, which is exactly the class's "failure that looks like success": a
+confident, tidy, wrong remote. The search in `dna/models.py` matches letters
+and digits, with room for one misread character and a region suffix.
+
+How we would notice if retrieval went wrong tomorrow, the class's last
+question: nothing would crash, so the measured hit rate is a test.
+`tests/test_models.py` fails CI if a clean label stops finding the right
+remote first at least 99% of the time (99.6% today), or a label with one
+misread character at least 95% (96.1%).
+
 ## Attacking it (the email-assistant class)
 
 `python -m agent.attack` talks to the live model as an attacker would, and

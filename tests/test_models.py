@@ -65,6 +65,19 @@ class ModelSearchTest(unittest.TestCase):
         self.assertEqual(len(out), 7)
         self.assertEqual(sum(a != b for a, b in zip(out, "B3228HD")), 1)
 
+    def test_retrieval_quality_cannot_drop_silently(self):
+        """The RAG class's question: if retrieval started returning the wrong
+        remote tomorrow, how would we notice? Nothing would crash; the search
+        would still return three tidy answers. So the measured hit rate is a
+        test: CI fails if a clean label stops finding the right remote first
+        (99.6% today) or one misread character does (96.1% today)."""
+        rows = {}
+        for line in models.retrieval_report(models.load()).splitlines()[2:]:
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            rows[cells[0]] = float(cells[2].rstrip("%"))
+        self.assertGreaterEqual(rows["clean"], 99.0)
+        self.assertGreaterEqual(rows["misread"], 95.0)
+
     def test_report_runs(self):
         self.assertIn("| misread |", models.retrieval_report(self.index))
 
