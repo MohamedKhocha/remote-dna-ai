@@ -3,8 +3,10 @@
 One wrap-style middleware, around every model call:
 
 1. The prompt follows the user's language, read from the runtime context.
-2. A phone without an infrared emitter never sees send_code: the tool is not
-   there, so the model cannot even ask to use it.
+2. A phone without an infrared emitter never sees send_code, and if the model
+   calls it anyway (it can: it knows the name from the prompt; the attack in
+   agent/attack.py did exactly that), the call is refused where tools run.
+   Hiding a tool from the model is not a lock; refusing it at execution is.
 3. The model escalates when the session gets hard. Flash-Lite answers by
    default; once two addresses have been ruled out (a TV the catalogue knows
    badly), a stronger model takes over. Short, easy sessions stay cheap.
@@ -12,7 +14,7 @@ One wrap-style middleware, around every model call:
 from __future__ import annotations
 
 from langchain.agents.middleware import AgentMiddleware
-from langchain.messages import SystemMessage
+from langchain.messages import SystemMessage, ToolMessage
 
 LANGUAGES = {"ar": "Arabic", "fr": "French", "en": "English", "es": "Spanish"}
 ESCALATE_AFTER = 2  # ruled-out addresses before the stronger model takes over
@@ -42,6 +44,23 @@ class DynamicAgent(AgentMiddleware):
             changes["model"] = self.strong_model
 
         return request.override(**changes) if changes else request
+
+    @staticmethod
+    def _no_emitter(runtime) -> bool:
+        ctx = runtime.context if runtime is not None else None
+        return ctx is not None and getattr(ctx, "phone_has_ir", True) is False
+
+    def _refuse(self, request):
+        if request.tool_call["name"] == "send_code" and self._no_emitter(request.runtime):
+            return ToolMessage("Refused: this phone has no infrared emitter, so no code can be sent.",
+                               tool_call_id=request.tool_call["id"], name="send_code", status="error")
+        return None
+
+    def wrap_tool_call(self, request, handler):
+        return self._refuse(request) or handler(request)
+
+    async def awrap_tool_call(self, request, handler):
+        return self._refuse(request) or await handler(request)
 
     def wrap_model_call(self, request, handler):
         return handler(self._adapt(request))

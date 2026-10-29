@@ -35,6 +35,7 @@ A language model now chooses which tool to call, so the threats change:
 | **Information disclosure** | The Gemini key leaking | Python reads it from `.env`, which git ignores. The demo page keeps the visitor's key in memory, never stores it, and sends it only to Google's API. The repository holds no key; secret scanning is on |
 | **Denial of service** | A slow or busy model service | Timeout, three retries and a rate limiter on the model; at most 12 model calls per turn on the page |
 | **Elevation of privilege** | Another agent using the MCP server to act on a TV | The MCP server is read-only: lookups and predictions, no send |
+| **Elevation of privilege** | A model calling a tool it was not offered (found by `agent/attack.py`: it called the hidden `send_code` on a phone without an emitter) | Tools are refused where they run, not only hidden from the model (`DynamicAgent.wrap_tool_call`), tested with an approving user |
 
 What the agent sends to Google: the conversation, the model number typed, and
 the tool results (addresses and command numbers). Nothing else about the user.

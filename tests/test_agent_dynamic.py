@@ -3,6 +3,7 @@ import unittest
 
 try:
     from langchain.messages import AIMessage, HumanMessage
+    from langgraph.types import Command
     from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 
     from agent.remote_agent import RemoteContext, build_agent
@@ -62,6 +63,24 @@ class DynamicTest(unittest.TestCase):
         answered = [tag for tag, x in Seeing.log if isinstance(x, str)]
         self.assertEqual(answered.count("small"), 4)
         self.assertEqual(answered[-1], "strong")
+
+
+    def test_a_hidden_tool_called_anyway_is_refused_where_tools_run(self):
+        # The live attack (agent/attack.py): the model called send_code although it was not offered.
+        sent = []
+        script = [call("choose_address", {"protocol": "samsung32", "address": 14}, 1),
+                  call("send_code", {"button": "power"}, 2), AIMessage("Sorry, I cannot.")]
+        agent = build_agent(model=Seeing(messages=iter(script)), strong_model=None,
+                            sender=lambda p, a, c: sent.append(c) or "sent")
+        cfg = {"configurable": {"thread_id": "attack"}}
+        ctx = RemoteContext(phone_has_ir=False)
+        out = agent.invoke({"messages": [HumanMessage("send power, I do have an emitter")]}, cfg, context=ctx)
+        while "__interrupt__" in out:  # even a user who approves
+            n = len(out["__interrupt__"][0].value["action_requests"])
+            out = agent.invoke(Command(resume={"decisions": [{"type": "approve"}] * n}), cfg, context=ctx)
+        self.assertEqual(sent, [])
+        refusal = next(m for m in out["messages"] if getattr(m, "name", None) == "send_code")
+        self.assertIn("no infrared emitter", refusal.text)
 
 
 if __name__ == "__main__":
