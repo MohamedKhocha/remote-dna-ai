@@ -19,6 +19,7 @@ existed before; this folder is new.
 | MCP | `mcp_server.py` offers the read-only tools to any MCP client; `mcp_agent.py` reaches it over stdio like any client would, plus Tavily's hosted MCP server for web search |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Middleware | doors in the loop the model cannot talk past: at most 12 model calls per turn (`ModelCallLimitMiddleware`) and 60 codes per session (`ToolCallLimitMiddleware`), both tested |
+| Managing long conversations | `trim.py`: a before-agent hook drops old tool round trips (a call with its answers, never one without the other); the facts live in state, so nothing that matters is lost. In a 24-turn session the last call sees 58 messages instead of 100, and the session resends 1,738 messages instead of 2,550 (−32%) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
 | Personal chef project (LangGraph Studio) | `agent/studio.py` and `langgraph.json`: `langgraph dev` opens the agent in Studio, every step visible |
 

@@ -25,6 +25,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
 from . import tools as dna_tools
+from .trim import TrimToolHistory
 
 # Flash-Lite: fast, reliable tool calls, and the most generous free-tier quota.
 DEFAULT_MODEL = "google_genai:gemini-3.1-flash-lite"
@@ -223,6 +224,8 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
             ModelCallLimitMiddleware(run_limit=turn_limit, exit_behavior="end"),
             # A session that keeps sending is going nowhere; stop it rather than spam the TV.
             ToolCallLimitMiddleware(tool_name="send_code", thread_limit=send_limit),
+            # A long session resends every message on every call; the facts live in state.
+            TrimToolHistory(),
             HumanInTheLoopMiddleware(
             interrupt_on={"send_code": {"allowed_decisions": ["approve", "reject"]}},
             description_prefix="Point the phone at the TV. Send this code?",
