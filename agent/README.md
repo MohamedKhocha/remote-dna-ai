@@ -14,7 +14,7 @@ existed before; this folder is new.
 | Foundational models | `create_agent` with Gemini; timeout, retries and a rate limiter on the model |
 | Tools | `find_model`, `brand_addresses`, `predict_buttons` over the catalogue (`tools.py`) |
 | Short-term memory, state | `RemoteState` keeps the address and the confirmed buttons; a checkpointer keeps the conversation |
-| MCP | `mcp_server.py` offers the read-only tools to any MCP client |
+| MCP | `mcp_server.py` offers the read-only tools to any MCP client; `mcp_agent.py` reaches it over stdio like any client would, plus Tavily's hosted MCP server for web search |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
 | Personal chef project (LangGraph Studio) | `agent/studio.py` and `langgraph.json`: `langgraph dev` opens the agent in Studio, every step visible |
@@ -27,6 +27,7 @@ echo GOOGLE_API_KEY=your-key > .env       # free key: aistudio.google.com/apikey
 python -m agent.chat                      # talk to it; the TV is a virtual IRIS 43G7200
 python -m agent.mcp_server                # or plug the tools into Claude, Cursor or Codex
 python -m agent.injection_check           # the multimodal class's injection, on this agent
+python -m agent.mcp_agent "Who makes Starlight TVs?"   # our MCP server + Tavily's (TAVILY_API_KEY)
 ```
 
 In the terminal, `/photo agent/labels/label-iris.png` sends a label photo.
@@ -52,6 +53,18 @@ works: `REMOTE_DNA_MODEL=anthropic:claude-...` or `openai:...` in `.env`.
   on held-out brands by `python -m dna.evaluate` (see the main README).
 - In the app the phone's infrared emitter sends the code; here `send_code`
   calls whatever sender it is given.
+
+## Local brands through MCP: what the web can and cannot tell
+
+The catalogue knows the maker of one local brand only (Iris uses Skyworth
+remotes, checked on a real TV). `mcp_agent.py` lets the agent search the web
+through Tavily's MCP server, which we did not build, for the others. On
+29 October: for Starlight it found no reliable maker and said so; for Condor
+it ran three searches and reported that Condor makes its own sets on several
+platforms, so no single maker applies. Both answers were honest, and both
+show the limit: the web rarely says which remote a local brand uses. Web
+answers stay unverified and never enter `LOCAL_MAKERS`. One thing it got
+wrong: it searched the web before trying the catalogue, against its prompt.
 
 ## Prompt injection through the camera
 
