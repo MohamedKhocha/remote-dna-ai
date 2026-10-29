@@ -126,5 +126,22 @@ class AgentFlowTest(unittest.TestCase):
         self.assertLessEqual(calls, 3)
 
 
+    def test_an_edited_send_uses_the_users_button_without_asking_again(self):
+        sent = []
+        script = iter([
+            call("choose_address", {"protocol": "samsung32", "address": 14}, 1),
+            call("send_code", {"button": "volUp"}, 2),
+            AIMessage("Did the TV mute?"),
+        ])
+        agent = build_agent(model=ScriptedModel(messages=script), sender=lambda p, a, c: sent.append(c) or "sent")
+        cfg = {"configurable": {"thread_id": "edit"}}
+        out = agent.invoke({"messages": [HumanMessage("go")]}, cfg)
+        self.assertIn("__interrupt__", out)
+        out = agent.invoke(Command(resume={"decisions": [
+            {"type": "edit", "edited_action": {"name": "send_code", "args": {"button": "mute"}}}]}), cfg)
+        self.assertEqual(sent, [13], "mute's code, not volume up's")
+        self.assertNotIn("__interrupt__", out)
+
+
 if __name__ == "__main__":
     unittest.main()

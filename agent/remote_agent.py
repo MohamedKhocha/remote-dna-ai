@@ -227,7 +227,8 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
             # A long session resends every message on every call; the facts live in state.
             TrimToolHistory(),
             HumanInTheLoopMiddleware(
-            interrupt_on={"send_code": {"allowed_decisions": ["approve", "reject"]}},
+            # approve, reject with a reason, or edit: send another button instead.
+                interrupt_on={"send_code": {"allowed_decisions": ["approve", "edit", "reject"]}},
             description_prefix="Point the phone at the TV. Send this code?",
             ),
         ],

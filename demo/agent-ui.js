@@ -5,7 +5,7 @@
 // is sent only to Google's API.
 import { loadCatalogue } from './dna.js';
 import { loadModels } from './models.js';
-import { brandAddresses, findModel, predictButtons, virtualTv } from './agent.js';
+import { WANTED, brandAddresses, findModel, predictButtons, virtualTv } from './agent.js';
 
 const $ = (id) => document.getElementById(id);
 const MODEL = 'gemini-3.1-flash-lite';
@@ -74,7 +74,8 @@ function showTv(text, lit) {
   if (lit) setTimeout(() => $('a-tv').classList.remove('lit'), 900);
 }
 
-/** The visitor approves or refuses one send; nothing reaches the TV without it. */
+/** The visitor approves, refuses, or edits one send (sends another button);
+ *  nothing reaches the TV without it. Resolves to the button to send, or null. */
 function approve(button) {
   return new Promise((resolve) => {
     const li = say('sys', `The agent asks to send ${NAMES[button] ?? button}. `, 'ask');
@@ -83,10 +84,18 @@ function approve(button) {
     yes.textContent = 'Send';
     const no = document.createElement('button');
     no.textContent = "Don't send";
-    const done = (ok) => { yes.remove(); no.remove(); li.append(ok ? 'Sent.' : 'Refused.'); resolve(ok); };
-    yes.onclick = () => done(true);
-    no.onclick = () => done(false);
-    li.append(yes, ' ', no);
+    const other = document.createElement('select');
+    other.innerHTML = '<option value="">Send another button…</option>' +
+      WANTED.filter((b) => b !== button).map((b) => `<option value="${b}">${NAMES[b] ?? b}</option>`).join('');
+    const done = (choice) => {
+      yes.remove(); no.remove(); other.remove();
+      li.append(choice === null ? 'Refused.' : choice === button ? 'Sent.' : `Sent ${NAMES[choice] ?? choice} instead.`);
+      resolve(choice);
+    };
+    yes.onclick = () => done(button);
+    no.onclick = () => done(null);
+    other.onchange = () => other.value && done(other.value);
+    li.append(yes, ' ', no, ' ', other);
   });
 }
 
@@ -99,9 +108,11 @@ async function run(name, args) {
       return { result: `Testing ${args.protocol} address ${args.address}.` };
     case 'send_code': {
       if (state.protocol == null) return { error: 'call choose_address first' };
+      const chosen = await approve(args.button);
+      if (chosen === null) return { error: 'The user did not send it.' };
+      args = { ...args, button: chosen }; // an edit replaces the button, as in Python
       const guess = predictButtons(remotes, state.protocol, state.address, state.confirmed, [args.button])[args.button];
       if (guess === undefined) return { error: `no catalogue remote on this address has ${args.button}` };
-      if (!(await approve(args.button))) return { error: 'The user did not send it.' };
       const seen = tv.receive(state.protocol, state.address, guess);
       showTv(seen ? `▶ ${NAMES[seen] ?? seen}` : '…', !!seen);
       say('tv', seen ? `reacts: ${NAMES[seen] ?? seen}` : 'nothing happens', seen ? 'hit' : '');

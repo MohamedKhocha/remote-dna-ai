@@ -58,9 +58,14 @@ def main() -> None:
         if "__interrupt__" in result:
             decisions = []
             for req in result["__interrupt__"][0].value["action_requests"]:
-                ok = input(f"   send {req['args'].get('button')}? [y/n] ").strip().lower().startswith("y")
-                decisions.append({"type": "approve"} if ok else
-                                 {"type": "reject", "message": "The user did not send it."})
+                ans = input(f"   send {req['args'].get('button')}? [y]es / [n]o / or type another button: ").strip()
+                if ans.lower() in ("y", "yes", ""):
+                    decisions.append({"type": "approve"})
+                elif ans.lower() in ("n", "no"):
+                    why = input("   why not? (optional) ").strip() or "The user did not send it."
+                    decisions.append({"type": "reject", "message": why})
+                else:  # edit: the user picks the button to send instead
+                    decisions.append({"type": "edit", "edited_action": {"name": "send_code", "args": {"button": ans}}})
             payload = Command(resume={"decisions": decisions})
             continue
         print(f"agent> {result['messages'][-1].text}\n")
