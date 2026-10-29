@@ -91,5 +91,31 @@ IRIS_LABEL = "\n".join([
 ])
 
 
+@unittest.skipUnless(shutil.which("node"), "Node.js is not installed")
+class AgentParityTest(unittest.TestCase):
+    def test_the_browser_agent_tools_match_agent_tools(self):
+        from agent import tools
+
+        cases = []
+        for r in catalogue.load():
+            if len(cases) >= 600:
+                break
+            first = next((b for b in ESSENTIALS if b in r.commands), None)
+            cases.append([r.protocol, r.address, {}])
+            if first:
+                cases.append([r.protocol, r.address, {first: r.commands[first]}])
+        brands = ["Samsung", "LG", "Sony", "Philips", "Iris", "nobody"]
+        done = subprocess.run(
+            ["node", str(ROOT / "demo" / "parity-agent.mjs")],
+            input=json.dumps({"predict": cases, "brands": brands}),
+            capture_output=True, text=True, check=True, encoding="utf-8",
+        )
+        js = json.loads(done.stdout)
+        py = [tools.predict_buttons(p, a, k) for p, a, k in cases]
+        differ = [c for c, a, b in zip(cases, js["predict"], py) if a != b]
+        self.assertEqual(differ, [], f"{len(differ)} predictions differ, first: {differ[:3]}")
+        self.assertEqual(js["brands"], [tools.brand_addresses(b) for b in brands])
+
+
 if __name__ == "__main__":
     unittest.main()

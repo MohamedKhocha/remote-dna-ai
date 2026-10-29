@@ -28,6 +28,13 @@ the model on found the TV and learned its buttons. Version 1.0.9 added the
 model-number search (photograph the label, or type the number); 1.0.10, built
 on 18 October, replaces the thirty-question deep search with one tap.
 
+Update, 29 October: an **agent** (`agent/`) puts these pieces in a
+conversation. The user describes the TV or types the model number; a language
+model finds where the TV listens, sends one code at a time only after the user
+says yes, records what the TV really did, and uses the DNA model for the rest.
+It runs in a terminal, as an MCP server for other agents, and live on the demo
+page. See [`agent/README.md`](agent/README.md).
+
 ## Results so far
 
 The test is a TV whose brand is in no list: every remote of the target's brand
@@ -195,7 +202,7 @@ Answers include the tap. Times assume 2.5 s to look and answer each question.
 ## Live demo
 
 `demo/index.html` (live at https://mohamedkhocha.github.io/remote-dna/demo/)
-has three parts, each running the same code as the Python, in JavaScript:
+has four parts, each running the same code as the Python, in JavaScript:
 
 1. **Learning the buttons:** pick any remote, and the page plays the TV while
    today's order and the model race side by side, with the reason for each
@@ -207,10 +214,14 @@ has three parts, each running the same code as the Python, in JavaScript:
 3. **Find by model:** type a model number or paste a label's text
    (`demo/models.js`). Reading a photo needs ML Kit, which runs only in the
    app.
+4. **The agent:** replay a real recorded session, or talk to it live with your
+   own free Gemini key (kept in the tab, sent only to Google's API). Every
+   code waits for your click (`demo/agent.js`, `demo/agent-ui.js`).
 
-`tests/test_parity.py` checks that all three give exactly the same answers
+`tests/test_parity.py` checks that all four give exactly the same answers
 as the Python: every remote's session, more than a thousand model searches,
-and 160 deep searches with three different hands.
+160 deep searches with three different hands, and 600 of the agent's
+predictions.
 
 To run it locally, serve the repository root and open the demo:
 
@@ -232,6 +243,15 @@ python -m dna.models      # model-number search under simulated misreads
 python -m dna.sweep       # deep search: the sweep against the batches it replaced
 ```
 
+The agent needs a few packages and a free Gemini key (`agent/README.md`):
+
+```
+pip install -r agent/requirements.txt
+echo GOOGLE_API_KEY=your-key > .env
+python -m agent.chat         # the agent in a terminal, with a virtual TV
+python -m agent.mcp_server   # its read-only tools for any MCP client
+```
+
 ## Layout
 
 | Path | What it is |
@@ -246,7 +266,8 @@ python -m dna.sweep       # deep search: the sweep against the batches it replac
 | `dna/sweep.py` | The deep search: the sweep and the tap, against the old batches |
 | `dna/export.py` | Writes the settings and parity fixture the phone app uses |
 | `export/` | Those two files |
-| `demo/` | The browser demo: the model, the deep search and the model-number search in JavaScript |
+| `demo/` | The browser demo: the model, the deep search, the model-number search and the agent in JavaScript |
+| `agent/` | The agent: LangChain tools over the model, human approval of every send, an MCP server |
 | `dna/evaluate.py` | Evaluation with the target's brand removed, on a fixed half of the brands |
 | `tests/` | Unit tests, including one that the held-out brand cannot leak |
 
@@ -269,6 +290,9 @@ not do, and `THREAT_MODEL.md` for how it is kept safe.
 - **Built during the project month:** everything else in this repository, and
   in the app the code that runs the model, the model-number search with its
   on-phone label reading (1.0.9), and the deep-search sweep (1.0.10).
+- **Built in the last week (29 October):** the agent in `agent/` and the
+  demo page's fourth part, while following LangChain Academy's agent course
+  in the programme's third week.
 
 ## Who built what
 
@@ -280,11 +304,12 @@ assistant that wrote most of the code under his direction.
   search that saves both time and questions; the choice to read labels on the
   phone, offline; testing on real TVs (an Iris 43G7200 on a Skyworth chassis,
   an Iris 43E6A Android TV and a Stream TV) and photographing their labels; the
-  go/no-go on every result; the app.
+  go/no-go on every result; the app; the idea of turning the course's agent
+  lessons into an agent for this product.
 - **Claude Code:** the evaluation method, the model, the simulation, the
   model-number search, the sweep and its simulation, the JavaScript and
-  TypeScript ports with their parity tests, the demo page and the
-  documentation, each reviewed and run before it was committed.
+  TypeScript ports with their parity tests, the demo page, the agent and
+  the documentation, each reviewed and run before it was committed.
 
 ## What happens next
 

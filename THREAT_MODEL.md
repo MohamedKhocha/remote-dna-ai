@@ -24,6 +24,21 @@ and the code in the app that runs it.
 | **Denial of service** | The model making a session hang or crash the app | Work per answer is bounded by the catalogue size. Any exception leaves the usual order in place. Sessions give up after 300 questions in the simulation; in the app the user can stop at any time |
 | **Elevation of privilege** | The model doing more than suggest an order | It only reorders codes the app was going to try anyway. Power and source codes, as known for that address, are never moved forward. Nothing is saved unless the user confirmed it |
 
+## The agent (`agent/`, demo part 4)
+
+A language model now chooses which tool to call, so the threats change:
+
+| Threat | What it would look like here | What stops it |
+|---|---|---|
+| **Prompt injection** | Text on a label, or typed into the chat, tells the agent to send codes on its own or to ignore the user | The model can only *ask* to send: `HumanInTheLoopMiddleware` pauses before every `send_code`, and the page sends nothing without a click. A refusal sends nothing (`tests/test_agent_flow.py`). The system prompt treats label text as data |
+| **A confident wrong answer** | The agent says a button works when it does not | A button is recorded only by `confirm_button`, which the prompt allows only after the user says the TV reacted; the summary lists confirmed buttons only |
+| **Information disclosure** | The Gemini key leaking | Python reads it from `.env`, which git ignores. The demo page keeps the visitor's key in memory, never stores it, and sends it only to Google's API. The repository holds no key; secret scanning is on |
+| **Denial of service** | A slow or busy model service | Timeout, three retries and a rate limiter on the model; at most 12 model calls per turn on the page |
+| **Elevation of privilege** | Another agent using the MCP server to act on a TV | The MCP server is read-only: lookups and predictions, no send |
+
+What the agent sends to Google: the conversation, the model number typed, and
+the tool results (addresses and command numbers). Nothing else about the user.
+
 ## Data poisoning, later
 
 Today the model learns from the published catalogue only. If confirmed remotes

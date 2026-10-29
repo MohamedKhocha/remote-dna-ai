@@ -1,0 +1,105 @@
+{
+ "recorded": "2026-10-29",
+ "model": "gemini-3.1-flash-lite",
+ "confirmed": {
+  "volUp": 20,
+  "mute": 13,
+  "volDown": 21,
+  "chUp": 18,
+  "chDown": 19
+ },
+ "events": [
+  {
+   "who": "you",
+   "text": "My Iris TV lost its remote. The label on the back says MODEL: 43G7200."
+  },
+  {
+   "approve": "volUp"
+  },
+  {
+   "tv": "volUp"
+  },
+  {
+   "who": "agent",
+   "text": "Did your TV respond when I sent the volume up command? Please let me know so we can continue."
+  },
+  {
+   "who": "you",
+   "text": "Yes, the volume went up."
+  },
+  {
+   "approve": "mute"
+  },
+  {
+   "tv": "mute"
+  },
+  {
+   "who": "agent",
+   "text": "Great! Did the TV mute successfully with this command?"
+  },
+  {
+   "who": "you",
+   "text": "Yes, the sound went off."
+  },
+  {
+   "approve": "volDown"
+  },
+  {
+   "tv": "volDown"
+  },
+  {
+   "who": "agent",
+   "text": "Did the volume decrease when I sent that command?"
+  },
+  {
+   "who": "you",
+   "text": "Yes, the volume went down."
+  },
+  {
+   "approve": "chUp"
+  },
+  {
+   "tv": "chUp"
+  },
+  {
+   "who": "agent",
+   "text": "Did the channel go up with that command?"
+  },
+  {
+   "who": "you",
+   "text": "Yes, the channel went up."
+  },
+  {
+   "approve": "chDown"
+  },
+  {
+   "tv": "chDown"
+  },
+  {
+   "who": "agent",
+   "text": "Did the channel go down correctly?"
+  },
+  {
+   "who": "you",
+   "text": "Yes, the channel went down."
+  },
+  {
+   "approve": "menu"
+  },
+  {
+   "tv": "menu"
+  },
+  {
+   "who": "agent",
+   "text": "Did the menu appear on your screen?"
+  },
+  {
+   "who": "you",
+   "text": "That's enough for now, give me the summary."
+  },
+  {
+   "who": "agent",
+   "text": "Here is the summary of your configured remote: it uses the samsung32 protocol at address 14, and supports Volume Up, Volume Down, Mute, Channel Up, and Channel Down. You can return anytime to configure the remaining buttons."
+  }
+ ]
+}
