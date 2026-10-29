@@ -1,0 +1,6 @@
+# Only the agent needs these; dna/ stays standard-library Python.
+langchain>=1.3,<2
+langgraph>=1.2,<2
+langchain-google-genai>=4.3,<5
+mcp>=1.29,<2
+python-dotenv>=1.2,<2
