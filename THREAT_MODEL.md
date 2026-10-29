@@ -39,6 +39,16 @@ A language model now chooses which tool to call, so the threats change:
 
 What the agent sends to Google: the conversation, the model number typed, and
 the tool results (addresses and command numbers). Nothing else about the user.
+On Gemini's free tier, Google states that this content may be used to improve
+its products. That is acceptable for a demo about TV remotes and is the reason
+the agent is not in the app: there, the model and the label reading stay on
+the phone, offline, and the label photo is deleted after reading (the line
+the Zero to Verified class draws). Bringing the agent into the app needs a
+paid tier or a provider that does not train on the data, behind our server.
+
+Spending: the Gemini and Tavily keys used here are on free tiers with no
+billing attached, so a runaway loop stops at the quota, not at a bill. If
+billing is ever enabled, a spending limit goes on the key first.
 
 ## Data poisoning, later
 
