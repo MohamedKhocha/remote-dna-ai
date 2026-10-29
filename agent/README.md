@@ -17,6 +17,7 @@ existed before; this folder is new.
 | MCP | `mcp_server.py` offers the read-only tools to any MCP client |
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code` |
+| Personal chef project (LangGraph Studio) | `agent/studio.py` and `langgraph.json`: `langgraph dev` opens the agent in Studio, every step visible |
 
 ## Run it
 
@@ -29,6 +30,17 @@ python -m agent.injection_check           # the multimodal class's injection, on
 ```
 
 In the terminal, `/photo agent/labels/label-iris.png` sends a label photo.
+
+To watch every step in LangGraph Studio (a free LangSmith account opens it):
+
+```
+pip install "langgraph-cli[inmem]" colorama   # colorama: Windows only
+langgraph dev                                 # from the repository root
+```
+
+Studio keeps the conversation itself, so `studio.py` builds the agent without
+its own checkpointer; the virtual TV's reaction appears in the `send_code`
+result, and each send still waits in Studio's interrupt panel.
 
 The default model is `gemini-3.1-flash-lite` (free tier). Any LangChain model
 works: `REMOTE_DNA_MODEL=anthropic:claude-...` or `openai:...` in `.env`.

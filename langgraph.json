@@ -1,0 +1,7 @@
+{
+  "dependencies": ["./agent/requirements.txt", "."],
+  "graphs": {
+    "remote_dna": "./agent/studio.py:graph"
+  },
+  "env": ".env"
+}

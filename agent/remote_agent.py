@@ -144,8 +144,9 @@ def build_tools(sender: Sender = _no_sender):
     return [find_model, brand_addresses, choose_address, send_code, confirm_button, predict_buttons, remote_summary]
 
 
-def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None):
-    """`model` is a LangChain chat model or a "provider:name" string."""
+def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True):
+    """`model` is a LangChain chat model or a "provider:name" string.
+    `memory=False` leaves persistence to the host, as LangGraph Studio requires."""
     if model is None or isinstance(model, str):
         # A remote service is slow or down now and then: bound the wait.
         model = init_chat_model(model or os.environ.get("REMOTE_DNA_MODEL", DEFAULT_MODEL),
@@ -157,7 +158,7 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None):
         tools=build_tools(sender),
         system_prompt=SYSTEM_PROMPT,
         state_schema=RemoteState,
-        checkpointer=checkpointer or InMemorySaver(),
+        checkpointer=(checkpointer or InMemorySaver()) if memory else None,
         middleware=[HumanInTheLoopMiddleware(
             interrupt_on={"send_code": {"allowed_decisions": ["approve", "reject"]}},
             description_prefix="Point the phone at the TV. Send this code?",
