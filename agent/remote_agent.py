@@ -12,6 +12,8 @@ from __future__ import annotations
 import os
 from typing import Callable
 
+from typing_extensions import NotRequired
+
 from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langchain.chat_models import init_chat_model
@@ -67,9 +69,10 @@ def photo_message(path: str, text: str = "Here is a photo of my TV's label."):
 
 
 class RemoteState(AgentState):
-    protocol: str
-    address: int
-    confirmed: dict[str, int]
+    # Filled by the tools during a session, never by the caller.
+    protocol: NotRequired[str]
+    address: NotRequired[int]
+    confirmed: NotRequired[dict[str, int]]
 
 
 # Where send_code delivers a code. The terminal demo plugs in a virtual TV;
