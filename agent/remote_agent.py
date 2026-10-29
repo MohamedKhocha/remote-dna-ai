@@ -16,7 +16,8 @@ from typing import Callable
 from typing_extensions import NotRequired
 
 from langchain.agents import AgentState, create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
+from langchain.agents.middleware import (HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ModelFallbackMiddleware,
+                                         ToolCallLimitMiddleware)
 from langchain.chat_models import init_chat_model
 from langchain_core.rate_limiters import InMemoryRateLimiter
 from langchain.messages import ToolMessage
@@ -25,10 +26,15 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
 from . import tools as dna_tools
+from .dynamic import DynamicAgent
 from .trim import TrimToolHistory
 
 # Flash-Lite: fast, reliable tool calls, and the most generous free-tier quota.
 DEFAULT_MODEL = "google_genai:gemini-3.1-flash-lite"
+# Takes over when a session gets hard (agent/dynamic.py). Its free tier is tighter.
+STRONG_MODEL = "google_genai:gemini-3.5-flash"
+# Tried in turn when the model in use answers with an error (503 "high demand" is common).
+FALLBACK_MODELS = ("google_genai:gemini-flash-lite-latest", "google_genai:gemini-3.5-flash")
 
 SYSTEM_PROMPT = """You are Remote DNA, an assistant that rebuilds a lost or broken TV remote
 on the user's phone. The phone sends infrared codes; the user tells you what the TV did.
@@ -190,6 +196,12 @@ def build_tools(sender: Sender = _no_sender):
             confirm_button, predict_buttons, remote_summary]
 
 
+def _strong():
+    return init_chat_model(os.environ.get("REMOTE_DNA_STRONG_MODEL", STRONG_MODEL), timeout=60, max_retries=3,
+                           # 5 requests a minute on the free tier
+                           rate_limiter=InMemoryRateLimiter(requests_per_second=0.08))
+
+
 def make_model(model=None):
     """A chat model from a "provider:name" string, or the one given."""
     if model is None or isinstance(model, str):
@@ -208,10 +220,14 @@ SEND_LIMIT = 60   # codes sent in one session; a teach session rarely needs half
 
 def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memory: bool = True,
                 tools=None, system_prompt: str = SYSTEM_PROMPT,
-                turn_limit: int = TURN_LIMIT, send_limit: int = SEND_LIMIT):
+                turn_limit: int = TURN_LIMIT, send_limit: int = SEND_LIMIT, strong_model=...):
     """`model` is a LangChain chat model or a "provider:name" string.
     `memory=False` leaves persistence to the host, as LangGraph Studio requires.
     `tools` replaces the default tool list (agent/team.py uses it)."""
+    real = model is None or isinstance(model, str)
+    if strong_model is ...:  # default: the stronger Gemini, only when a real model is in use
+        strong_model = _strong() if real else None
+    fallback = [ModelFallbackMiddleware(*[init_chat_model(m, timeout=60, max_retries=1) for m in FALLBACK_MODELS])] if real else []
     return create_agent(
         model=make_model(model),
         tools=tools if tools is not None else build_tools(sender),
@@ -226,6 +242,10 @@ def build_agent(model=None, sender: Sender = _no_sender, checkpointer=None, memo
             ToolCallLimitMiddleware(tool_name="send_code", thread_limit=send_limit),
             # A long session resends every message on every call; the facts live in state.
             TrimToolHistory(),
+            # Prompt in the user's language, no send_code without an emitter, a stronger model when stuck.
+            DynamicAgent(strong_model=strong_model),
+            # A busy model (503) hands the call to the next one instead of ending the session.
+            *fallback,
             HumanInTheLoopMiddleware(
             # approve, reject with a reason, or edit: send another button instead.
                 interrupt_on={"send_code": {"allowed_decisions": ["approve", "edit", "reject"]}},

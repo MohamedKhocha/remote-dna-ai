@@ -20,6 +20,7 @@ existed before; this folder is new.
 | Multimodal messages | a photo of the TV's label, Base64-encoded (`photo_message`, `/photo` in the terminal) |
 | Middleware | doors in the loop the model cannot talk past: at most 12 model calls per turn (`ModelCallLimitMiddleware`) and 60 codes per session (`ToolCallLimitMiddleware`), both tested |
 | Managing long conversations | `trim.py`: a before-agent hook drops old tool round trips (a call with its answers, never one without the other); the facts live in state, so nothing that matters is lost. In a 24-turn session the last call sees 58 messages instead of 100, and the session resends 1,738 messages instead of 2,550 (−32%) |
+| Dynamic agents | `dynamic.py`, wrap-style: the prompt follows the user's language; a phone without an emitter never sees `send_code`; after two ruled-out addresses Gemini 3.5 Flash takes over from Flash-Lite. Plus `ModelFallbackMiddleware`: a busy model (503) hands the call on. Same first turn, same four tools: Flash-Lite 3,726 tokens in / 81 out, 3.5 Flash 4,154 in / 362 out (29 Oct, fallback on) |
 | Human in the loop | `HumanInTheLoopMiddleware` pauses before every `send_code`, the one tool that acts on the world; the user can approve, reject with a reason, or edit (send another button instead), in the terminal, in Studio and on the demo page |
 | Personal chef project (LangGraph Studio) | `agent/studio.py` and `langgraph.json`: `langgraph dev` opens the agent in Studio, every step visible |
 
