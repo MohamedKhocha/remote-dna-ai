@@ -131,8 +131,6 @@
   .player-head h2 { font-size: 20px; margin: 0; }
   .player-actions { display: flex; align-items: center; gap: 10px; }
   .icon-btn { width: 44px; height: 44px; padding: 0; border-radius: 12px; display: inline-grid; place-items: center; }
-  .app-progress { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 16px 0 0; }
-  #app-bar { height: 100%; width: 0; background: var(--rd-grad-action); }
   #app-toggle { width: 44px; height: 44px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center;
                 background: var(--rd-grad-action); color: #fff; border: 0; }
   /* full screen: the player alone, larger, on the brand glow */
@@ -261,7 +259,6 @@
           <li hidden><b>13 · Air conditioner</b><span>A dial for the temperature, plus modes, fan and swing, over infrared or Wi‑Fi.</span></li>
           <li hidden><b>14 · Built-in guide</b><span>Every feature explained step by step, in six languages.</span></li>
         </ul>
-        <div class="app-progress"><div id="app-bar"></div></div>
         <div class="app-nav">
           <button id="app-prev" type="button" aria-label="Previous screen">‹</button>
           <button id="app-toggle" type="button" aria-label="Pause"></button>
@@ -287,7 +284,7 @@
       <li class="p3"><span class="n">3</span><div><a href="#model">Find by model</a>
         <p>Type <b>43G7200</b>, or tap an example. The right remote comes first.</p></div></li>
       <li class="p4"><span class="n">4</span><div><a href="#agent">The agent</a>
-        <p>Press <b>Watch a recorded session</b>. It asks before every send, and the TV reacts. Talking to it live is optional.</p></div></li>
+        <p>Press <b>Watch a recorded session</b>, or <b>Start a live chat</b>: no key needed. It asks before every send.</p></div></li>
     </ol>
   </div>
 
@@ -410,9 +407,10 @@
     The same tools as above, driven by a language model: it finds where the TV listens from its model number or
     brand, tests one button at a time, and fills in the rest with the DNA model. It never sends a code on its own:
     every send waits for your click, and it only counts a button once you say the TV reacted. Built in the last
-    week of the programme with LangChain's agent course (<code>agent/</code> in the repository, in Python); this
-    page runs the same tools in JavaScript. Since 30 October it also runs inside the REMOTE DNA app, as a beta:
-    the phone's own infrared emitter sends each code you approve, and the demo video shows it on a real TV.
+    week of the programme with LangChain's agent course (<code>agent/</code> in the repository, in Python); since
+    30 October it also runs inside the REMOTE DNA app, as a beta: the phone's own infrared emitter sends each code
+    you approve, and the demo video shows it on a real TV. The live chat below talks to that same agent; the codes
+    you approve go to a virtual TV in your browser.
   </p>
   <div class="agent-grid">
     <div>
@@ -428,14 +426,11 @@
         <button class="primary" id="a-replay">Watch a recorded session</button>
       </div>
       <div class="agent-opt">
-        <div class="opt"><span class="tag optional">Optional</span> Talk to it yourself, with your own free Gemini key</div>
-        <div class="arow">
-          <input id="a-key" type="password" autocomplete="off" placeholder="Paste a Gemini API key">
-          <button id="a-start">Start live</button>
-        </div>
-        <div class="tv-note">Skip this if you only want to see it work. A free key takes a minute at
-          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (Google account).
-          It stays in this tab: not saved, sent only to Google's Gemini API. Model: gemini-3.1-flash-lite, free tier.</div>
+        <div class="opt"><span class="tag free">No key needed</span> Talk to it yourself, live</div>
+        <button id="a-start">Start a live chat</button>
+        <div class="tv-note">The chat runs the same agent as the app's beta, on our server. Your messages go to that
+          server and to Google's Gemini API to be answered, so do not type personal data. The first answer can take
+          up to a minute while the server wakes up.</div>
       </div>
       <ul class="alog" id="a-log" style="margin-top:12px"></ul>
       <div id="a-live" hidden>
@@ -581,8 +576,8 @@ try {
 }
 </script>
 <script type="module" src="./extra.js"></script>
-<script type="module" src="./agent-ui.js"></script>
-<script type="module" src="./tour.js?v=4"></script>
+<script type="module" src="./agent-ui.js?v=2"></script>
+<script type="module" src="./tour.js?v=5"></script>
 <div id="tour-bar" role="status" hidden>
   <span id="tour-step">Tour</span><span id="tour-text"></span>
   <button id="tour-stop" type="button">Stop</button>

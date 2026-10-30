@@ -1,4 +1,4 @@
-// The app's screens as a small video player (play, pause, full screen), and a guided tour that
+// The app's screens as a small player (play, pause, full screen), and a guided tour that
 // plays every part of this page one after another (it presses the same buttons a visitor would).
 
 const $ = (id) => document.getElementById(id);
@@ -21,31 +21,19 @@ const player = $('app');
 const slides = [...document.querySelectorAll('#app-phone img')];
 const caps = [...document.querySelectorAll('#app-caps li')];
 const dots = $('app-dots');
-const progress = $('app-bar');
 const toggle = $('app-toggle');
 const fullBtn = $('app-full');
 let at = 0;
 let timer = 0;
 let playing = !reduced; // with 'reduce motion' the screens wait for the play button
 
-function runBar(ms) {
-  if (!progress) return;
-  progress.style.transition = 'none';
-  progress.style.width = '0%';
-  if (!ms) return;
-  void progress.offsetWidth;
-  progress.style.transition = `width ${ms}ms linear`;
-  progress.style.width = '100%';
-}
-
-function show(i, ms = playing ? SLIDE_MS : 0) {
+function show(i) {
   at = (i + slides.length) % slides.length;
   slides.forEach((s, k) => s.classList.toggle('on', k === at));
   caps.forEach((c, k) => (c.hidden = k !== at));
   [...dots.children].forEach((d, k) => d.setAttribute('aria-current', k === at ? 'true' : 'false'));
   const next = slides[(at + 1) % slides.length];
   if (next && next.loading === 'lazy') next.loading = 'eager';
-  runBar(ms);
 }
 
 function schedule() {
@@ -157,7 +145,7 @@ async function tour() {
     go('app');
     clearTimeout(timer);
     for (let k = 0; k < slides.length; k++) {
-      show(k, 2600);
+      show(k);
       await wait(2600);
     }
     if (isFull()) exitFull();
