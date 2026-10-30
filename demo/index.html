@@ -5,18 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Remote DNA: live demo</title>
 <meta name="description" content="Watch Remote DNA learn the buttons of a TV it has never seen, next to the app's current method.">
+<meta name="theme-color" content="#05070D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF1F8" media="(prefers-color-scheme: light)">
+<link rel="icon" href="https://mohamedkhocha.github.io/remote-dna/assets/logo-mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://mohamedkhocha.github.io/remote-dna/assets/brand.css">
 <style>
+  /* Colours and type: ../assets/brand.css (brand identity v1.0.3), Night or Day with the system. */
   :root {
-    --bg: #f6f7fb; --card: #ffffff; --line: #e2e6ef; --text: #141a26; --dim: #5d6880;
-    --accent: #2f6fe4; --good: #1a8f55; --old: #8a94a8; --chip: #eef1f7;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0b101d; --card: #131a2b; --line: #243049; --text: #e8edf7; --dim: #93a1bc;
-            --accent: #5b8ff5; --good: #3ccf86; --old: #6e7a93; --chip: #1b2438; }
+    --bg: var(--rd-bg); --card: var(--rd-bg-2); --line: var(--rd-line); --text: var(--rd-ink); --dim: var(--rd-dim);
+    --accent: var(--rd-blue); --good: var(--rd-green); --old: var(--rd-dim); --chip: var(--rd-surface-2);
+    --fill: var(--rd-action); --on-good: var(--rd-on-green);
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text);
-         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+         font: 16px/1.55 var(--rd-font); }
   .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
   h1 { font-size: 26px; margin: 0 0 6px; }
   .lead { color: var(--dim); margin: 0 0 20px; max-width: 720px; }
@@ -27,7 +29,7 @@
                    background: var(--card); color: var(--text); padding: 9px 12px; }
   select { min-width: 180px; max-width: 100%; }
   button { cursor: pointer; font-weight: 600; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary { background: var(--fill); border-color: var(--fill); color: #fff; }
   button:disabled { opacity: .5; cursor: default; }
   .target { font-size: 14px; color: var(--dim); margin: 4px 0 14px; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
@@ -43,7 +45,7 @@
   .lane.new .count { color: var(--accent); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
   .chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--chip); color: var(--dim); }
-  .chip.on { background: var(--good); color: #fff; }
+  .chip.on { background: var(--good); color: var(--on-good); }
   .log { list-style: none; margin: 0; padding: 0; font-size: 13px; max-height: 260px; overflow: auto;
          border-top: 1px solid var(--line); }
   .log li { padding: 6px 0; border-bottom: 1px solid var(--line); }
@@ -56,7 +58,7 @@
   .fact span { font-size: 13px; color: var(--dim); }
   footer { margin-top: 22px; font-size: 13px; color: var(--dim); }
   a { color: var(--accent); }
-  .err { color: #d14343; }
+  .err { color: var(--rd-red); }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; font-size: 14px; }
   .toc a { text-decoration: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); }
   h2.sec { font-size: 22px; margin: 40px 0 6px; }
@@ -71,7 +73,7 @@
   .osd.on { opacity: 1; }
   .stand { width: 60px; height: 10px; margin: 6px auto 0; border-radius: 0 0 6px 6px; background: #10141f; }
   .tv-note { font-size: 12px; color: var(--dim); margin-top: 8px; }
-  button.saw { background: var(--good); border-color: var(--good); color: #fff; font-size: 18px; padding: 12px 22px; }
+  button.saw { background: var(--good); border-color: var(--good); color: var(--on-good); font-size: 18px; padding: 12px 22px; }
   .meter { height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; margin: 4px 0 8px; }
   .meter div { height: 8px; width: 0; background: var(--accent); }
   .hits { list-style: none; margin: 10px 0 0; padding: 0; }
@@ -100,10 +102,13 @@
   .arow { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
   .arow input { flex: 1; min-width: 180px; font: inherit; border-radius: 10px; border: 1px solid var(--line);
                 background: var(--card); color: var(--text); padding: 9px 12px; }
+  .topbar { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; text-decoration: none; font-size: 15px; }
+  .topbar img { width: 26px; height: 26px; }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <a class="topbar rd-word" href="https://mohamedkhocha.github.io/remote-dna/"><img src="https://mohamedkhocha.github.io/remote-dna/assets/logo-mark.svg" alt=""><span>REMOTE <i>DNA</i></span></a>
   <h1>Remote DNA: teaching a TV the app has never seen</h1>
   <p class="lead">
     In the app, the phone sends one infrared code at a time and the user says what the TV did.
