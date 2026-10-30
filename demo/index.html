@@ -123,7 +123,9 @@
   .tag.free { background: var(--good); color: var(--on-good); }
   .tag.optional { background: var(--chip); color: var(--dim); border: 1px solid var(--line); }
   /* the app slideshow */
-  .app-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: center; }
+  .app-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: center;
+              margin: 16px 0 18px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; }
+  .app-kicker { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
   @media (max-width: 720px) { .app-grid { grid-template-columns: 1fr; justify-items: center; } }
   .phone { width: 260px; border-radius: 34px; padding: 10px; background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.05));
            border: 1px solid rgba(255,255,255,.18); box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 0 60px rgba(116,68,224,.28), inset 0 1px 0 rgba(255,255,255,.25); }
@@ -131,7 +133,7 @@
   .phone-screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
   .phone-screen img.on { opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .phone-screen img { transition: none; } }
-  #app-caps { list-style: none; margin: 0; padding: 0; min-height: 96px; }
+  #app-caps { list-style: none; margin: 0; padding: 0; min-height: 120px; }
   #app-caps b { display: block; font-size: 22px; margin-bottom: 6px; }
   #app-caps span { color: var(--dim); font-size: 16px; }
   .app-nav { display: flex; align-items: center; gap: 10px; margin: 16px 0 6px; }
@@ -172,9 +174,55 @@
   <div class="card start">
     <div class="start-head">
       <h2>How to try this page <span class="ok">No install · no account · no key</span></h2>
-      <button class="primary" id="tour-play" type="button">Play the full tour (about 2 min)</button>
+      <button class="primary" id="tour-play" type="button">Play the full tour (about 3 min)</button>
     </div>
-    <p class="tv-note">Everything runs in your browser, on a virtual TV. Press <b>Play the full tour</b> to watch every part run by itself, or try them one by one:</p>
+    <div class="app-grid" id="app">
+      <div class="phone"><div class="phone-screen" id="app-phone">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/01-add-device.jpg" alt="REMOTE DNA screen: Add a device" width="540" height="1080" class="on">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/02-find-by-model.jpg" alt="REMOTE DNA screen: Find by model" width="540" height="1080">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/03-teach-my-tv.jpg" alt="REMOTE DNA screen: Teach my TV" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/04-deep-search.jpg" alt="REMOTE DNA screen: Deep search" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/05-remote-ready.jpg" alt="REMOTE DNA screen: Your remote, ready" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/06-command-hunter.jpg" alt="REMOTE DNA screen: Command Hunter" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/07-remote-dna-ai.jpg" alt="REMOTE DNA screen: Remote DNA AI" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/08-agent-entry.jpg" alt="REMOTE DNA screen: The agent (beta)" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/09-agent-asks.jpg" alt="REMOTE DNA screen: The agent asks first" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/10-agent-saved.jpg" alt="REMOTE DNA screen: Remote saved" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/11-androidtv.jpg" alt="REMOTE DNA screen: Android TV over Wi‑Fi" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/12-wifi.jpg" alt="REMOTE DNA screen: Wi‑Fi devices" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/13-ac.jpg" alt="REMOTE DNA screen: Air conditioner" width="540" height="1080" loading="lazy">
+        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/14-guide.jpg" alt="REMOTE DNA screen: Built-in guide" width="540" height="1080" loading="lazy">
+      </div></div>
+      <div>
+        <div class="app-kicker">The app: REMOTE DNA</div>
+        <ul id="app-caps" aria-live="polite">
+          <li><b>1 · Add a device</b><span>Wi‑Fi, Bluetooth or infrared: the phone reaches the TV, box or air conditioner the fastest way it can.</span></li>
+          <li hidden><b>2 · Find by model</b><span>Photograph the label at the back. The phone reads it offline and suggests the right remote at once.</span></li>
+          <li hidden><b>3 · Teach my TV</b><span>A TV no list knows: the phone sends one code, you answer with one tap, and the DNA model picks the next code.</span></li>
+          <li hidden><b>4 · Deep search</b><span>Still nothing? The phone sweeps every address without a pause, and you tap “I saw it!” once, when the channel number moves.</span></li>
+          <li hidden><b>5 · Your remote, ready</b><span>The TV is found (here an Iris set, made by Skyworth, address 0x0E) and the full remote is on the phone. “Fix a button” repairs any key that misbehaves.</span></li>
+          <li hidden><b>6 · Command Hunter</b><span>For keys still missing: the phone tries each code of the found address. Here every essential key is already mapped.</span></li>
+          <li hidden><b>7 · Remote DNA AI</b><span>Questions and answers on the phone, offline, that take you to the right way of adding your device.</span></li>
+          <li hidden><b>8 · The agent (beta)</b><span>“Ask Remote DNA AI” opens the agent, from Help or from the round DNA button on every screen. Beta build 1.0.16, not yet on Google Play.</span></li>
+          <li hidden><b>9 · The agent asks first</b><span>Type the model from the label (here “iris G7200”). The agent picks a code and asks before sending it: Send, Don’t send, or another button.</span></li>
+          <li hidden><b>10 · Remote saved</b><span>You say whether the TV reacted. One confirmed key is enough: the agent builds a 27-button remote, and you save it.</span></li>
+          <li hidden><b>11 · Android TV over Wi‑Fi</b><span>Touchpad, arrows, a cursor and typing on the TV, with no infrared needed.</span></li>
+          <li hidden><b>12 · Wi‑Fi devices</b><span>Finds Android TV, Google TV, LG, Samsung and Roku sets on the home network.</span></li>
+          <li hidden><b>13 · Air conditioner</b><span>A dial for the temperature, plus modes, fan and swing, over infrared or Wi‑Fi.</span></li>
+          <li hidden><b>14 · Built-in guide</b><span>Every feature explained step by step, in six languages.</span></li>
+        </ul>
+        <div class="app-nav">
+          <button id="app-prev" type="button" aria-label="Previous screen">‹</button>
+          <div id="app-dots"></div>
+          <button id="app-next" type="button" aria-label="Next screen">›</button>
+        </div>
+        <p class="tv-note">Real screens: version 1.0.14 from Google Play, and the agent beta (1.0.16, an APK build).
+          <a href="https://play.google.com/store/apps/details?id=com.beinteck.remotedna" target="_blank" rel="noopener">Free on Google Play</a>.
+        Using it for real needs an Android phone with an infrared emitter, or a smart TV on the same Wi‑Fi.</p>
+      </div>
+    </div>
+    <p class="tv-note">Below, the app's AI runs in your browser on a virtual TV, because a browser cannot send infrared.
+      <b>Play the full tour</b> runs every part by itself, or try them one by one:</p>
     <ol class="steps4">
       <li><span class="n">1</span><div><a href="#teach">Learning the buttons</a>
         <p>Press <b>Run to the end</b>. Fewer questions on the right is what the model saves the user.</p></div></li>
@@ -185,41 +233,6 @@
       <li><span class="n">4</span><div><a href="#agent">The agent</a>
         <p>Press <b>Watch a recorded session</b>. It asks before every send, and the TV reacts. Talking to it live is optional.</p></div></li>
     </ol>
-  </div>
-
-  <h2 class="sec" id="app" style="margin-top:0">The app: REMOTE DNA on Google Play</h2>
-  <p class="lead">Real screens from the published app (version 1.0.14). The parts below run its AI in your browser,
-    because a browser cannot send infrared. The agent beta inside the app is shown in the demo video.</p>
-  <div class="card app-grid" id="app-box">
-    <div class="phone"><div class="phone-screen" id="app-phone">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/01-add-device.jpg" alt="REMOTE DNA screen: Add a device" width="540" height="1080" class="on">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/02-find-by-model.jpg" alt="REMOTE DNA screen: Find by model" width="540" height="1080">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/03-teach-my-tv.jpg" alt="REMOTE DNA screen: Teach my TV" width="540" height="1080" loading="lazy">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/04-remote-dna-ai.jpg" alt="REMOTE DNA screen: Remote DNA AI" width="540" height="1080" loading="lazy">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/05-androidtv.jpg" alt="REMOTE DNA screen: Android TV over Wi‑Fi" width="540" height="1080" loading="lazy">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/06-wifi.jpg" alt="REMOTE DNA screen: Wi‑Fi devices" width="540" height="1080" loading="lazy">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/07-ac.jpg" alt="REMOTE DNA screen: Air conditioner" width="540" height="1080" loading="lazy">
-        <img src="https://mohamedkhocha.github.io/remote-dna/assets/tour/08-guide.jpg" alt="REMOTE DNA screen: Built-in guide" width="540" height="1080" loading="lazy">
-    </div></div>
-    <div>
-      <ul id="app-caps" aria-live="polite">
-          <li><b>1 · Add a device</b><span>Wi‑Fi, Bluetooth or infrared: the phone reaches the TV, box or air conditioner the fastest way it can.</span></li>
-          <li hidden><b>2 · Find by model</b><span>Photograph the label at the back. The phone reads it offline and suggests the right remote at once.</span></li>
-          <li hidden><b>3 · Teach my TV</b><span>A TV no list knows: the phone sends one code, you answer with one tap, and the DNA model picks the next code.</span></li>
-          <li hidden><b>4 · Remote DNA AI</b><span>Questions and answers on the phone, offline, that take you to the right way of adding your device.</span></li>
-          <li hidden><b>5 · Android TV over Wi‑Fi</b><span>Touchpad, arrows, a cursor and typing on the TV, with no infrared needed.</span></li>
-          <li hidden><b>6 · Wi‑Fi devices</b><span>Finds Android TV, Google TV, LG, Samsung and Roku sets on the home network.</span></li>
-          <li hidden><b>7 · Air conditioner</b><span>A dial for the temperature, plus modes, fan and swing, over infrared or Wi‑Fi.</span></li>
-          <li hidden><b>8 · Built-in guide</b><span>Every feature explained step by step, in six languages.</span></li>
-      </ul>
-      <div class="app-nav">
-        <button id="app-prev" type="button" aria-label="Previous screen">‹</button>
-        <div id="app-dots"></div>
-        <button id="app-next" type="button" aria-label="Next screen">›</button>
-      </div>
-      <p class="tv-note"><a href="https://play.google.com/store/apps/details?id=com.beinteck.remotedna" target="_blank" rel="noopener">Free on Google Play</a>.
-        Using it for real needs an Android phone with an infrared emitter, or a smart TV on the same Wi‑Fi.</p>
-    </div>
   </div>
 
   <h2 class="sec" id="teach-h">1 · Learning the buttons: the model against today's order</h2>

@@ -38,7 +38,7 @@ slides.forEach((_, k) => {
 });
 $('app-prev').onclick = () => { show(at - 1); autoplay(); };
 $('app-next').onclick = () => { show(at + 1); autoplay(); };
-const box = $('app-box');
+const box = $('app');
 box.addEventListener('mouseenter', () => (paused = true));
 box.addEventListener('mouseleave', () => (paused = false));
 box.addEventListener('focusin', () => (paused = true));
@@ -83,7 +83,7 @@ async function tour() {
   bar.hidden = false;
   try {
     // 1. The app itself
-    status(1, 'The app: real screens from REMOTE DNA on Google Play');
+    status(1, 'The app: real screens, from adding a TV to the agent that rebuilds a remote');
     go('app');
     paused = false;
     show(0);
