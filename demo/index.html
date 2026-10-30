@@ -29,7 +29,7 @@
                    background: var(--card); color: var(--text); padding: 9px 12px; }
   select { min-width: 180px; max-width: 100%; }
   button { cursor: pointer; font-weight: 600; }
-  button.primary { background: var(--fill); border-color: var(--fill); color: #fff; }
+  button.primary { background: var(--rd-grad-action); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(116,68,224,.35); }
   button:disabled { opacity: .5; cursor: default; }
   .target { font-size: 14px; color: var(--dim); margin: 4px 0 14px; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
@@ -64,14 +64,15 @@
   h2.sec { font-size: 22px; margin: 40px 0 6px; }
   .deep-grid { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
   @media (max-width: 720px) { .deep-grid { grid-template-columns: 1fr; } }
-  .tv { background: #10141f; border-radius: 12px; padding: 10px; }
-  .screen { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; background: linear-gradient(135deg, #1d3557, #2a9d8f);
+  .tv { background: #0B0F1A; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,.12);
+         box-shadow: 0 0 34px rgba(79,139,255,.22), inset 0 1px 0 rgba(255,255,255,.08); }
+  .screen { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; background: radial-gradient(70% 90% at 85% 10%, rgba(34,211,238,.5), transparent 60%), linear-gradient(135deg, #2A1B6B, #3366E6);
             display: flex; align-items: flex-start; justify-content: flex-end; padding: 8px 10px; overflow: hidden; }
   .screen .ch { color: #fff; font: 700 14px/1 ui-monospace, monospace; opacity: .85; }
   .osd { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff;
          font: 800 54px/1 ui-monospace, monospace; background: rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; }
   .osd.on { opacity: 1; }
-  .stand { width: 60px; height: 10px; margin: 6px auto 0; border-radius: 0 0 6px 6px; background: #10141f; }
+  .stand { width: 60px; height: 10px; margin: 6px auto 0; border-radius: 0 0 6px 6px; background: #0B0F1A; }
   .tv-note { font-size: 12px; color: var(--dim); margin-top: 8px; }
   button.saw { background: var(--good); border-color: var(--good); color: var(--on-good); font-size: 18px; padding: 12px 22px; }
   .meter { height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; margin: 4px 0 8px; }
@@ -104,9 +105,11 @@
                 background: var(--card); color: var(--text); padding: 9px 12px; }
   .topbar { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; text-decoration: none; font-size: 15px; }
   .topbar img { width: 26px; height: 26px; }
+  /* glass surfaces (brand v1.0.4) */
+  .card, .toc a { background: var(--rd-surface); -webkit-backdrop-filter: var(--rd-blur); backdrop-filter: var(--rd-blur); box-shadow: var(--rd-glass-shadow); }
 </style>
 </head>
-<body>
+<body class="rd-glow">
 <div class="wrap">
   <a class="topbar rd-word" href="https://mohamedkhocha.github.io/remote-dna/"><img src="https://mohamedkhocha.github.io/remote-dna/assets/logo-mark.svg" alt=""><span>REMOTE <i>DNA</i></span></a>
   <h1>Remote DNA: teaching a TV the app has never seen</h1>
