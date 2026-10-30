@@ -47,6 +47,17 @@ STRIDE and OWASP were run on the app's live server (private repository): four
 issues found, fixed and deployed. The agent's own threats are in
 [`THREAT_MODEL.md`](THREAT_MODEL.md). 70 tests pass here.
 
+Update, 30 October (evening): the agent now runs **inside the REMOTE DNA app**,
+in a beta build that is not on Google Play yet. A floating button on every tab
+opens the chat, which answers in the language the user writes in. The app's
+server runs the agent and keeps the model key; when the user approves a send,
+the code comes back to the phone and its own infrared emitter sends it. After
+each test code, two buttons answer "yes, the TV responded" or "no, nothing
+happened" in one tap, and the finished remote is saved with the user's other
+remotes. It was tried on a real TV; it reaches the Play version once the
+privacy policy covers the chat. The app's code stays private, so this part is
+shown in the demo video rather than in this repository.
+
 ## Results so far
 
 The test is a TV whose brand is in no list: every remote of the target's brand
@@ -304,9 +315,9 @@ not do, and `THREAT_MODEL.md` for how it is kept safe.
 - **Built during the project month:** everything else in this repository, and
   in the app the code that runs the model, the model-number search with its
   on-phone label reading (1.0.9), and the deep-search sweep (1.0.10).
-- **Built in the last week (29 October):** the agent in `agent/` and the
-  demo page's fourth part, while following LangChain Academy's agent course
-  in the programme's third week.
+- **Built in the last week (29 and 30 October):** the agent in `agent/`, the
+  demo page's fourth part, and the agent's beta inside the app, while
+  following LangChain Academy's agent course in the programme's third week.
 
 ## Who built what
 
@@ -327,7 +338,8 @@ assistant that wrote most of the code under his direction.
 
 ## What happens next
 
-Help the third of TVs that sit alone on their address, starting with code
+Bring the agent from its beta to every user on Google Play, with a way to
+report a wrong reply. Help the third of TVs that sit alone on their address, starting with code
 layouts shared across addresses. Measure the model against real users'
 mistakes, not only perfect answers. Feed it remotes confirmed in the app,
 with the safeguards in `THREAT_MODEL.md`. Bring the same approach to air

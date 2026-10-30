@@ -57,8 +57,9 @@ works: `REMOTE_DNA_MODEL=anthropic:claude-...` or `openai:...` in `.env`.
 - The virtual TV answers with a catalogue remote on the TV's address, so the
   demo shows the conversation, not the model's accuracy. Accuracy is measured
   on held-out brands by `python -m dna.evaluate` (see the main README).
-- In the app the phone's infrared emitter sends the code; here `send_code`
-  calls whatever sender it is given.
+- In the app (a beta build since 30 October) the agent runs on the app's
+  server and the phone's own infrared emitter sends each approved code; here
+  `send_code` calls whatever sender it is given.
 
 ## RAG: the decision not to use embeddings (the RAG class)
 
