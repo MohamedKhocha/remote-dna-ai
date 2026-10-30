@@ -35,6 +35,18 @@ says yes, records what the TV really did, and uses the DNA model for the rest.
 It runs in a terminal, as an MCP server for other agents, and live on the demo
 page. See [`agent/README.md`](agent/README.md).
 
+Update, 30 October: the agent now applies every class of LangChain's agent
+course, each with a test and a measured result: a label photo, runtime context
+(country, language, whether the phone has an emitter), a sub-agent that
+identifies the TV, limits the model cannot talk past, trimmed long sessions
+(32% fewer messages resent), approve / reject / edit before every send, a
+stronger model only when a session is stuck, redaction of personal data before
+anything reaches the model, and attacks run against it (one found a real hole:
+a hidden tool was still callable, now refused where tools run). The same week,
+STRIDE and OWASP were run on the app's live server (private repository): four
+issues found, fixed and deployed. The agent's own threats are in
+[`THREAT_MODEL.md`](THREAT_MODEL.md). 70 tests pass here.
+
 ## Results so far
 
 The test is a TV whose brand is in no list: every remote of the target's brand
@@ -250,6 +262,8 @@ pip install -r agent/requirements.txt
 echo GOOGLE_API_KEY=your-key > .env
 python -m agent.chat         # the agent in a terminal, with a virtual TV
 python -m agent.mcp_server   # its read-only tools for any MCP client
+python -m agent.team         # the same agent as a team (identifier + main agent)
+python -m agent.attack       # talk to it as an attacker; every send is refused
 ```
 
 ## Layout
