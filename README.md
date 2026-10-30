@@ -237,9 +237,10 @@ has four parts, each running the same code as the Python, in JavaScript:
 3. **Find by model:** type a model number or paste a label's text
    (`demo/models.js`). Reading a photo needs ML Kit, which runs only in the
    app.
-4. **The agent:** replay a real recorded session, or talk to it live with your
-   own free Gemini key (kept in the tab, sent only to Google's API). Every
-   code waits for your click (`demo/agent.js`, `demo/agent-ui.js`).
+4. **The agent:** replay a real recorded session, or talk to it live, with no
+   key: the chat reaches the same agent the app's beta uses, on our server,
+   which holds the Gemini key. Every code waits for your click and goes to a
+   virtual TV in the browser (`demo/agent.js`, `demo/agent-ui.js`).
 
 `tests/test_parity.py` checks that all four give exactly the same answers
 as the Python: every remote's session, more than a thousand model searches,

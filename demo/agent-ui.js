@@ -16,6 +16,7 @@ const LANGS = ['ar', 'fr', 'en', 'es', 'pt', 'zh'];
 let tv;
 let thread = null;
 let busy = false;
+let first = true;
 
 function say(who, text, cls = '') {
   const li = document.createElement('li');
@@ -78,10 +79,15 @@ async function turn(text) {
   busy = true;
   $('a-send').disabled = true;
   say('you', text);
-  const waking = setTimeout(() => say('sys', 'Waking the server: the first answer can take up to a minute.', 'note'), 5000);
+  // The first answer starts the agent on the server, which can take up to a minute.
+  let note = null;
+  const hint = first ? 'Starting the agent: the first answer can take up to a minute.' : 'The agent is thinking…';
+  const waking = setTimeout(() => (note = say('sys', hint, 'note')), first ? 4000 : 1500);
+  const settle = () => { clearTimeout(waking); note?.remove(); note = null; };
   try {
     let out = await post({ message: text });
-    clearTimeout(waking);
+    settle();
+    first = false;
     for (let step = 0; step < 12; step++) {
       for (const s of out.send ?? []) {
         const seen = tv.receive(s.protocol, Number(s.address), Number(s.command));
@@ -93,10 +99,12 @@ async function turn(text) {
       if (confirmed.length) $('a-state').textContent = confirmed.map((b) => NAMES[b] ?? b).join(' · ');
       if (!out.interrupt) break;
       const decision = await approve(out.interrupt.button);
+      note = say('sys', 'The agent is thinking…', 'note');
       out = await post({ decision });
+      settle();
     }
   } catch (e) {
-    clearTimeout(waking);
+    settle();
     say('sys', e.message, 'err');
   } finally {
     busy = false;
