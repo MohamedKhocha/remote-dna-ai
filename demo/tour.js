@@ -39,10 +39,12 @@ slides.forEach((_, k) => {
 $('app-prev').onclick = () => { show(at - 1); autoplay(); };
 $('app-next').onclick = () => { show(at + 1); autoplay(); };
 const box = $('app');
-box.addEventListener('mouseenter', () => (paused = true));
-box.addEventListener('mouseleave', () => (paused = false));
-box.addEventListener('focusin', () => (paused = true));
-box.addEventListener('focusout', () => (paused = false));
+if (box) {
+  box.addEventListener('mouseenter', () => (paused = true));
+  box.addEventListener('mouseleave', () => (paused = false));
+  box.addEventListener('focusin', () => (paused = true));
+  box.addEventListener('focusout', () => (paused = false));
+}
 show(0);
 autoplay();
 
@@ -85,10 +87,11 @@ async function tour() {
     // 1. The app itself
     status(1, 'The app: real screens, from adding a TV to the agent that rebuilds a remote');
     go('app');
-    paused = false;
-    show(0);
-    autoplay(2600);
-    await wait(2600 * slides.length);
+    clearInterval(timer);
+    for (let k = 0; k < slides.length; k++) {
+      show(k);
+      await wait(2600);
+    }
     autoplay();
 
     // 2. Learning the buttons

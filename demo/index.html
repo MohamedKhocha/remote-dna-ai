@@ -150,6 +150,22 @@
   #tour-bar[hidden] { display: none; }
   #tour-step { flex: none; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--rd-grad-action); color: #fff; }
   #tour-text { flex: 1; font-size: 14px; }
+  /* the four parts, one brand colour each */
+  .p1 { --c: var(--rd-blue); } .p2 { --c: var(--rd-cyan); } .p3 { --c: var(--rd-orange); } .p4 { --c: var(--rd-violet); }
+  .part { --accent: var(--c); position: relative; margin: 44px 0 0; padding: 24px 22px 22px; border-radius: 22px;
+          border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+          background: linear-gradient(160deg, color-mix(in srgb, var(--c) 15%, transparent), color-mix(in srgb, var(--c) 3%, transparent) 65%);
+          box-shadow: 0 20px 60px color-mix(in srgb, var(--c) 16%, transparent); }
+  .part::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: 22px 22px 0 0;
+                  background: linear-gradient(90deg, var(--c), transparent); }
+  .part > h2.sec:first-child { margin-top: 0; display: flex; align-items: center; gap: 12px; }
+  .pn { flex: none; display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 12px;
+        background: var(--c); color: var(--rd-bg); font-size: 19px; font-weight: 800;
+        box-shadow: 0 0 22px color-mix(in srgb, var(--c) 55%, transparent); }
+  .steps4 li.p1, .steps4 li.p2, .steps4 li.p3, .steps4 li.p4 {
+        border-color: color-mix(in srgb, var(--c) 50%, var(--line)); background: color-mix(in srgb, var(--c) 9%, transparent); }
+  .steps4 li[class] .n { background: var(--c); color: var(--rd-bg); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 50%, transparent); }
+  @media (max-width: 640px) { .part { padding: 18px 14px; border-radius: 18px; } }
   .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
   .topbar { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 15px; }
   .topbar img { width: 26px; height: 26px; }
@@ -224,18 +240,19 @@
     <p class="tv-note">Below, the app's AI runs in your browser on a virtual TV, because a browser cannot send infrared.
       <b>Play the full tour</b> runs every part by itself, or try them one by one:</p>
     <ol class="steps4">
-      <li><span class="n">1</span><div><a href="#teach">Learning the buttons</a>
+      <li class="p1"><span class="n">1</span><div><a href="#teach">Learning the buttons</a>
         <p>Press <b>Run to the end</b>. Fewer questions on the right is what the model saves the user.</p></div></li>
-      <li><span class="n">2</span><div><a href="#deep">Deep search</a>
+      <li class="p2"><span class="n">2</span><div><a href="#deep">Deep search</a>
         <p>Press <b>Start the sweep</b>, then <b>I saw it!</b> as soon as the TV's channel number changes.</p></div></li>
-      <li><span class="n">3</span><div><a href="#model">Find by model</a>
+      <li class="p3"><span class="n">3</span><div><a href="#model">Find by model</a>
         <p>Type <b>43G7200</b>, or tap an example. The right remote comes first.</p></div></li>
-      <li><span class="n">4</span><div><a href="#agent">The agent</a>
+      <li class="p4"><span class="n">4</span><div><a href="#agent">The agent</a>
         <p>Press <b>Watch a recorded session</b>. It asks before every send, and the TV reacts. Talking to it live is optional.</p></div></li>
     </ol>
   </div>
 
-  <h2 class="sec" id="teach-h">1 · Learning the buttons: the model against today's order</h2>
+  <section class="part p1">
+  <h2 class="sec" id="teach-h"><span class="pn">1</span>Learning the buttons: the model against today's order</h2>
 
   <div class="card" id="teach">
     <div class="pick">
@@ -283,7 +300,10 @@
     <div class="card fact"><b>No gain yet</b><span>when the TV is alone on its address (207 remotes): the app keeps its usual order there</span></div>
   </div>
 
-  <h2 class="sec" id="deep">2 · Deep search: one tap instead of thirty questions</h2>
+  </section>
+
+  <section class="part p2">
+  <h2 class="sec" id="deep"><span class="pn">2</span>Deep search: one tap instead of thirty questions</h2>
   <p class="lead">
     Before learning buttons, the app must find the address the TV listens on. When no remote in the catalogue
     reaches it, the phone tries the 720 addresses nobody uses, with number keys. It used to ask "did anything
@@ -321,7 +341,10 @@
     <div class="card fact"><b>158 s → 66 s</b><span>on average when the TV knows the first number key; a tap more than 3 s late is the one case that misses</span></div>
   </div>
 
-  <h2 class="sec" id="model">3 · Find by model: no question at all</h2>
+  </section>
+
+  <section class="part p3">
+  <h2 class="sec" id="model"><span class="pn">3</span>Find by model: no question at all</h2>
   <p class="lead">
     Most TVs carry their model number on a label at the back. In the app, ML Kit reads a photo of it on the
     phone, offline, and the photo is deleted. Your browser cannot run that reader, so type the model or paste
@@ -339,7 +362,10 @@
     <div class="card fact"><b>Local brands: a gap</b><span>Condor, Iris, Stream and Skyworth TVs are almost absent from public dumps; each TV a user teaches and shares can add its model</span></div>
   </div>
 
-  <h2 class="sec" id="agent">4 · The agent: rebuild a remote in a conversation</h2>
+  </section>
+
+  <section class="part p4">
+  <h2 class="sec" id="agent"><span class="pn">4</span>The agent: rebuild a remote in a conversation</h2>
   <p class="lead">
     The same tools as above, driven by a language model: it finds where the TV listens from its model number or
     brand, tests one button at a time, and fills in the rest with the DNA model. It never sends a code on its own:
@@ -380,6 +406,8 @@
       </div>
     </div>
   </div>
+
+  </section>
 
   <footer>
     Learning: medians from <code>python -m dna.simulate</code> on the half of the brands nothing was tuned on.
@@ -514,7 +542,7 @@ try {
 </script>
 <script type="module" src="./extra.js"></script>
 <script type="module" src="./agent-ui.js"></script>
-<script type="module" src="./tour.js"></script>
+<script type="module" src="./tour.js?v=3"></script>
 <div id="tour-bar" role="status" hidden>
   <span id="tour-step">Tour</span><span id="tour-text"></span>
   <button id="tour-stop" type="button">Stop</button>
