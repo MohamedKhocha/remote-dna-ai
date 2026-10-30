@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#EEF1F8" media="(prefers-color-scheme: light)">
 <link rel="icon" href="https://mohamedkhocha.github.io/remote-dna/assets/logo-mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://mohamedkhocha.github.io/remote-dna/assets/brand.css">
+<script src="https://mohamedkhocha.github.io/remote-dna/assets/theme.js"></script>
 <style>
   /* Colours and type: ../assets/brand.css (brand identity v1.0.3), Night or Day with the system. */
   :root {
@@ -103,15 +104,20 @@
   .arow { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
   .arow input { flex: 1; min-width: 180px; font: inherit; border-radius: 10px; border: 1px solid var(--line);
                 background: var(--card); color: var(--text); padding: 9px 12px; }
-  .topbar { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; text-decoration: none; font-size: 15px; }
+  .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
+  .topbar { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 15px; }
   .topbar img { width: 26px; height: 26px; }
   /* glass surfaces (brand v1.0.4) */
   .card, .toc a { background: var(--rd-surface); -webkit-backdrop-filter: var(--rd-blur); backdrop-filter: var(--rd-blur); box-shadow: var(--rd-glass-shadow); }
 </style>
 </head>
 <body class="rd-glow">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="sun" viewBox="0 0 24 24" fill="none"><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2"/><path d="M12 19.5v2"/><path d="M2.5 12h2"/><path d="M19.5 12h2"/><path d="M5.3 5.3l1.4 1.4"/><path d="M17.3 17.3l1.4 1.4"/><path d="M5.3 18.7l1.4-1.4"/><path d="M17.3 6.7l1.4-1.4"/></g></symbol><symbol id="moon" viewBox="0 0 24 24" fill="none"><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></g></symbol></svg>
 <div class="wrap">
+  <div class="topline">
   <a class="topbar rd-word" href="https://mohamedkhocha.github.io/remote-dna/"><img src="https://mohamedkhocha.github.io/remote-dna/assets/logo-mark.svg" alt=""><span>REMOTE <i>DNA</i></span></a>
+  <button class="rd-theme" type="button" aria-label="الوضع الليلي / النهاري · Night / Day mode" title="Night / Day"><svg class="i" aria-hidden="true"><use href="#sun"/></svg></button>
+  </div>
   <h1>Remote DNA: teaching a TV the app has never seen</h1>
   <p class="lead">
     In the app, the phone sends one infrared code at a time and the user says what the TV did.
