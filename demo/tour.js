@@ -1,52 +1,120 @@
-// The app's screens as a slideshow, and a guided tour that plays every part of
-// this page one after another (it presses the same buttons a visitor would).
+// The app's screens as a small video player (play, pause, full screen), and a guided tour that
+// plays every part of this page one after another (it presses the same buttons a visitor would).
 
 const $ = (id) => document.getElementById(id);
 const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* ------------------------------------------------------------ slideshow */
+const svg = (d, extra = '') =>
+  `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${d}</svg>`;
+const ICON = {
+  play: svg('<path d="M8 5l11 7-11 7z" fill="currentColor"/>'),
+  pause: svg('<path d="M8 5v14M16 5v14"/>', ' stroke-width="3"'),
+  expand: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  shrink: svg('<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'),
+};
 
+/* ------------------------------------------------------------ the player */
+
+const SLIDE_MS = 3200;
+const player = $('app');
 const slides = [...document.querySelectorAll('#app-phone img')];
 const caps = [...document.querySelectorAll('#app-caps li')];
 const dots = $('app-dots');
+const progress = $('app-bar');
+const toggle = $('app-toggle');
+const fullBtn = $('app-full');
 let at = 0;
 let timer = 0;
-let paused = false;
+let playing = !reduced; // with 'reduce motion' the screens wait for the play button
 
-function show(i) {
+function runBar(ms) {
+  if (!progress) return;
+  progress.style.transition = 'none';
+  progress.style.width = '0%';
+  if (!ms) return;
+  void progress.offsetWidth;
+  progress.style.transition = `width ${ms}ms linear`;
+  progress.style.width = '100%';
+}
+
+function show(i, ms = playing ? SLIDE_MS : 0) {
   at = (i + slides.length) % slides.length;
   slides.forEach((s, k) => s.classList.toggle('on', k === at));
   caps.forEach((c, k) => (c.hidden = k !== at));
   [...dots.children].forEach((d, k) => d.setAttribute('aria-current', k === at ? 'true' : 'false'));
   const next = slides[(at + 1) % slides.length];
   if (next && next.loading === 'lazy') next.loading = 'eager';
+  runBar(ms);
 }
 
-function autoplay(ms = 3600) {
-  clearInterval(timer);
-  if (reduced) return;
-  timer = setInterval(() => { if (!paused) show(at + 1); }, ms);
+function schedule() {
+  clearTimeout(timer);
+  if (playing) timer = setTimeout(() => { show(at + 1); schedule(); }, SLIDE_MS);
+}
+
+function setPlaying(on) {
+  playing = on;
+  if (toggle) {
+    toggle.innerHTML = on ? ICON.pause : ICON.play;
+    toggle.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    toggle.title = on ? 'Pause' : 'Play';
+  }
+  show(at);
+  schedule();
 }
 
 slides.forEach((_, k) => {
   const b = document.createElement('button');
   b.type = 'button';
   b.setAttribute('aria-label', `Screen ${k + 1} of ${slides.length}`);
-  b.onclick = () => { show(k); autoplay(); };
+  b.onclick = () => { show(k); schedule(); };
   dots.append(b);
 });
-$('app-prev').onclick = () => { show(at - 1); autoplay(); };
-$('app-next').onclick = () => { show(at + 1); autoplay(); };
-const box = $('app');
-if (box) {
-  box.addEventListener('mouseenter', () => (paused = true));
-  box.addEventListener('mouseleave', () => (paused = false));
-  box.addEventListener('focusin', () => (paused = true));
-  box.addEventListener('focusout', () => (paused = false));
+$('app-prev').onclick = () => { show(at - 1); schedule(); };
+$('app-next').onclick = () => { show(at + 1); schedule(); };
+if (toggle) toggle.onclick = () => setPlaying(!playing);
+
+// Full screen: the real one where the browser allows it, otherwise the player covers the page.
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+const isFull = () => fsElement() === player || player.classList.contains('cover');
+
+function syncFull() {
+  const on = isFull();
+  player.classList.toggle('full', on);
+  if (fullBtn) {
+    fullBtn.innerHTML = on ? ICON.shrink : ICON.expand;
+    fullBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+    fullBtn.title = on ? 'Exit full screen (Esc)' : 'Full screen';
+  }
 }
-show(0);
-autoplay();
+
+function cover(on) {
+  player.classList.toggle('cover', on);
+  document.documentElement.style.overflow = on ? 'hidden' : '';
+  syncFull();
+}
+
+async function enterFull() {
+  const req = player.requestFullscreen || player.webkitRequestFullscreen;
+  if (req) {
+    try { await req.call(player); } catch { cover(true); }
+  } else cover(true);
+  if (!playing) setPlaying(true);
+}
+
+function exitFull() {
+  if (fsElement()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  if (player.classList.contains('cover')) cover(false);
+}
+
+if (fullBtn) fullBtn.onclick = () => (isFull() ? exitFull() : enterFull());
+document.addEventListener('fullscreenchange', syncFull);
+document.addEventListener('webkitfullscreenchange', syncFull);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && player.classList.contains('cover')) cover(false); });
+
+syncFull();
+setPlaying(playing);
 
 /* ------------------------------------------------------------ guided tour */
 
@@ -84,15 +152,17 @@ async function tour() {
   stopped = false;
   bar.hidden = false;
   try {
-    // 1. The app itself
+    // 1. The app itself. The visitor asked for the tour, so the screens turn even with 'reduce motion'.
     status(1, 'The app: real screens, from adding a TV to the agent that rebuilds a remote');
     go('app');
-    clearInterval(timer);
+    clearTimeout(timer);
     for (let k = 0; k < slides.length; k++) {
-      show(k);
+      show(k, 2600);
       await wait(2600);
     }
-    autoplay();
+    if (isFull()) exitFull();
+    show(at);
+    schedule();
 
     // 2. Learning the buttons
     status(2, 'Learning the buttons: a TV whose address another brand shares, the case the model is for');
@@ -174,5 +244,5 @@ $('tour-play').onclick = () => {
 $('tour-stop').onclick = () => {
   stopped = true;
   bar.hidden = true;
-  autoplay();
+  schedule();
 };
