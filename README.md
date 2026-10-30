@@ -3,6 +3,16 @@
 The learning part of [REMOTE DNA](https://play.google.com/store/apps/details?id=com.beinteck.remotedna),
 an Android app that turns a phone into the remote for a TV or air conditioner.
 
+## Try it
+
+| What | Link | Needs |
+|---|---|---|
+| **Live demo** (the AI and the agent, on a virtual TV) | [mohamedkhocha.github.io/remote-dna/demo](https://mohamedkhocha.github.io/remote-dna/demo/) | A browser. No install, no account, no key. |
+| **The app on Google Play** (the model, the model-number search, the one-tap deep search) | [play.google.com/…/com.beinteck.remotedna](https://play.google.com/store/apps/details?id=com.beinteck.remotedna) | An Android phone with an infrared emitter (most Xiaomi, Redmi and POCO phones, and some others), or a smart TV on the same Wi‑Fi |
+| **Beta APK with the agent** (version 1.0.16, build 64, 30 October) | [Download the APK (160 MB)](https://expo.dev/artifacts/eas/oC_l6gvjeymo7yeyzgOsgrdgzu0r6KwLltva5g7pjcA.apk) | The same phone; allow "install unknown apps" once. Tap the round DNA button on any screen to talk to the agent. |
+
+The agent is not in the Play version yet: it reaches every user once the beta ends.
+
 ## The problem
 
 When a remote is lost or broken, a TV that works becomes unusable. Remote apps
