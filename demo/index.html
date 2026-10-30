@@ -104,6 +104,24 @@
   .arow { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
   .arow input { flex: 1; min-width: 180px; font: inherit; border-radius: 10px; border: 1px solid var(--line);
                 background: var(--card); color: var(--text); padding: 9px 12px; }
+  /* quick start and clearer choices */
+  .start { margin: 0 0 26px; padding: 18px 20px; }
+  .start h2 { font-size: 18px; margin: 0 0 4px; }
+  .ok { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+        background: var(--good); color: var(--on-good); margin-left: 6px; vertical-align: 2px; }
+  .steps4 { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 720px) { .steps4 { grid-template-columns: 1fr; } }
+  .steps4 li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .steps4 .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--rd-grad-action); color: #fff;
+               display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+  .steps4 a { color: var(--text); font-weight: 700; text-decoration: none; }
+  .steps4 p { margin: 2px 0 0; font-size: 14px; color: var(--dim); }
+  .steps4 b { color: var(--text); }
+  .agent-opt + .agent-opt { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .opt { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  .tag { font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+  .tag.free { background: var(--good); color: var(--on-good); }
+  .tag.optional { background: var(--chip); color: var(--dim); border: 1px solid var(--line); }
   .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
   .topbar { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 15px; }
   .topbar img { width: 26px; height: 26px; }
@@ -125,12 +143,22 @@
     catalogue. That remote's brand is removed from everything the model can see, exactly as for a TV
     no list knows. Both sides stop when volume up, volume down, mute, OK and back are found.
   </p>
-  <nav class="toc">
-    <a href="#teach">1. Learning the buttons</a>
-    <a href="#deep">2. Deep search: one tap</a>
-    <a href="#model">3. Find by model</a>
-    <a href="#agent">4. The agent</a>
-  </nav>
+  <div class="card start">
+    <h2>How to try this page <span class="ok">No install · no account · no key</span></h2>
+    <p class="tv-note">Everything runs in your browser, on a virtual TV. Four short tries, about two minutes in all:</p>
+    <ol class="steps4">
+      <li><span class="n">1</span><div><a href="#teach">Learning the buttons</a>
+        <p>Press <b>Run to the end</b>. Fewer questions on the right is what the model saves the user.</p></div></li>
+      <li><span class="n">2</span><div><a href="#deep">Deep search</a>
+        <p>Press <b>Start the sweep</b>, then <b>I saw it!</b> as soon as the TV's channel number changes.</p></div></li>
+      <li><span class="n">3</span><div><a href="#model">Find by model</a>
+        <p>Type <b>43G7200</b>, or tap an example. The right remote comes first.</p></div></li>
+      <li><span class="n">4</span><div><a href="#agent">The agent</a>
+        <p>Press <b>Watch a recorded session</b>. It asks before every send, and the TV reacts. Talking to it live is optional.</p></div></li>
+    </ol>
+  </div>
+
+  <h2 class="sec" style="margin-top:0">1 · Learning the buttons: the model against today's order</h2>
 
   <div class="card" id="teach">
     <div class="pick">
@@ -178,7 +206,7 @@
     <div class="card fact"><b>No gain yet</b><span>when the TV is alone on its address (207 remotes): the app keeps its usual order there</span></div>
   </div>
 
-  <h2 class="sec" id="deep">Deep search: one tap instead of thirty questions</h2>
+  <h2 class="sec" id="deep">2 · Deep search: one tap instead of thirty questions</h2>
   <p class="lead">
     Before learning buttons, the app must find the address the TV listens on. When no remote in the catalogue
     reaches it, the phone tries the 720 addresses nobody uses, with number keys. It used to ask "did anything
@@ -216,7 +244,7 @@
     <div class="card fact"><b>158 s → 66 s</b><span>on average when the TV knows the first number key; a tap more than 3 s late is the one case that misses</span></div>
   </div>
 
-  <h2 class="sec" id="model">Find by model: no question at all</h2>
+  <h2 class="sec" id="model">3 · Find by model: no question at all</h2>
   <p class="lead">
     Most TVs carry their model number on a label at the back. In the app, ML Kit reads a photo of it on the
     phone, offline, and the photo is deleted. Your browser cannot run that reader, so type the model or paste
@@ -234,7 +262,7 @@
     <div class="card fact"><b>Local brands: a gap</b><span>Condor, Iris, Stream and Skyworth TVs are almost absent from public dumps; each TV a user teaches and shares can add its model</span></div>
   </div>
 
-  <h2 class="sec" id="agent">The agent: rebuild a remote in a conversation</h2>
+  <h2 class="sec" id="agent">4 · The agent: rebuild a remote in a conversation</h2>
   <p class="lead">
     The same tools as above, driven by a language model: it finds where the TV listens from its model number or
     brand, tests one button at a time, and fills in the rest with the DNA model. It never sends a code on its own:
@@ -252,16 +280,20 @@
       <div class="tv-note">Confirmed: <span id="a-state"></span></div>
     </div>
     <div class="card">
-      <div class="arow">
-        <button id="a-replay">Replay a recorded session</button>
-        <span class="tv-note">or talk to it live with your own free Gemini key:</span>
+      <div class="agent-opt">
+        <div class="opt"><span class="tag free">No key needed</span> Watch a real session, recorded on 29 October</div>
+        <button class="primary" id="a-replay">Watch a recorded session</button>
       </div>
-      <div class="arow" style="margin-top:8px">
-        <input id="a-key" type="password" autocomplete="off" placeholder="Gemini API key (aistudio.google.com/apikey)">
-        <button class="primary" id="a-start">Start live</button>
+      <div class="agent-opt">
+        <div class="opt"><span class="tag optional">Optional</span> Talk to it yourself, with your own free Gemini key</div>
+        <div class="arow">
+          <input id="a-key" type="password" autocomplete="off" placeholder="Paste a Gemini API key">
+          <button id="a-start">Start live</button>
+        </div>
+        <div class="tv-note">Skip this if you only want to see it work. A free key takes a minute at
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (Google account).
+          It stays in this tab: not saved, sent only to Google's Gemini API. Model: gemini-3.1-flash-lite, free tier.</div>
       </div>
-      <div class="tv-note">The key stays in this tab: it is not saved, and it is sent only to Google's Gemini API.
-        Model: gemini-3.1-flash-lite, free tier.</div>
       <ul class="alog" id="a-log" style="margin-top:12px"></ul>
       <div id="a-live" hidden>
         <form class="arow" id="a-form">
